@@ -11,7 +11,7 @@ adapters = [
   {name = "Discord", module_name = "nonebot.adapters.discord"},
   {name = "开黑啦", module_name = "nonebot.adapters.kaiheila"},
 ]
-plugins = [ "nonebot_plugin_waiter","nonebot_plugin_memes","plugins.funny","plugins.group","plugins.random","plugins.scheduler","plugins.system","plugins.tools"]
+plugins = [ "nonebot_plugin_memes","plugins.funny","plugins.group","plugins.random","plugins.scheduler","plugins.system","plugins.tools"]
 
 
 
