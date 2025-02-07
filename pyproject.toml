@@ -1,0 +1,70 @@
+[project]
+name = "demo"
+version = "0.1.0"
+description = "demo"
+readme = "README.md"
+requires-python = ">=3.10, <4.0"
+
+[tool.nonebot]
+adapters = [
+  { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
+  {name = "Discord", module_name = "nonebot.adapters.discord"},
+  {name = "开黑啦", module_name = "nonebot.adapters.kaiheila"},
+]
+plugins = [ "nonebot_plugin_waiter","nonebot_plugin_memes","plugins.funny","plugins.group","plugins.random","plugins.scheduler","plugins.system","plugins.tools"]
+
+
+
+[tool.ruff]
+line-length = 150
+target-version = "py311"
+indent-width = 2
+
+
+[tool.ruff.lint]
+select = [
+  "F",     # Pyflakes
+  "W",     # pycodestyle warnings
+  "E",     # pycodestyle errors
+  "I",     # isort
+  "UP",    # pyupgrade
+  "ASYNC", # flake8-async
+  "C4",    # flake8-comprehensions
+  "T10",   # flake8-debugger
+  "T20",   # flake8-print
+  "PYI",   # flake8-pyi
+  "PT",    # flake8-pytest-style
+  "Q",     # flake8-quotes
+  "TID",   # flake8-tidy-imports
+  "RUF",   # Ruff-specific rules
+]
+ignore = [
+  "E402",   # module-import-not-at-top-of-file
+  "UP037",  # quoted-annotation
+  "RUF001", # ambiguous-unicode-character-string
+  "RUF002", # ambiguous-unicode-character-docstring
+  "RUF003", # ambiguous-unicode-character-comment
+  "TID252",
+
+]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+extra-standard-library = ["typing_extensions"]
+
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true
+
+
+[tool.pytest.ini_options]
+asyncio_mode = "strict"

@@ -1,0 +1,15 @@
+# https://taskfile.dev
+
+version: "3"
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  lagrange:
+    dir: Lagrange.OneBot
+    cmds:
+      - ./Lagrange.OneBot.exe
+  nb-run:
+    cmds:
+      - nb run

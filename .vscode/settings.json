@@ -1,0 +1,68 @@
+{
+  "files.exclude": {
+    "**/.git": false,
+    "**/.svn": false,
+    "**/.hg": false,
+    "**/CVS": false,
+    "**/.DS_Store": false,
+    "**/Thumbs.db": false,
+    "**/__pycache__": false,
+    "Lagrange.OneBot": false,
+    ".venv": false,
+    "__pycache__": false,
+    ".pytest_cache": false,
+    ".env": false,
+    "README.md": false,
+    ".gitignore": false,
+    "common/Alc/alc.md": false
+  },
+  "hide-files.files": [
+    "Lagrange.OneBot",
+    ".venv",
+    "__pycache__",
+    ".pytest_cache",
+    ".env",
+    "README.md",
+    ".gitignore",
+    "common/Alc/alc.md"
+  ],
+  "cSpell.words": [
+    "alconna",
+    "apikey",
+    "Arparma",
+    "bangumi",
+    "bili",
+    "busid",
+    "caiyun",
+    "deepl",
+    "fullmatch",
+    "imageutils",
+    "nonebot",
+    "onebot",
+    "qqfile",
+    "qqfolder",
+    "supervisorctl",
+    "weibo",
+    "yuelibot",
+    "yueling"
+  ],
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "python.linting.pylintArgs": [
+    "--indent-string='  '"
+  ],
+  "python.formatting.ruff": [
+    "--indent-size=2"
+  ],
+  "python.linting.pylintEnabled": true,
+  "python.formatting.provider": "ruff",
+  "files.associations": {
+    "*.py": "python" // Replace .myext with your custom extension
+  },
+  "editor.quickSuggestions": {
+    "comments": true,
+    "other": true,
+    "strings": true
+  },
+  "python.analysis.autoImportCompletions": true,
+}
