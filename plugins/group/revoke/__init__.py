@@ -1,8 +1,8 @@
-from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
-from nonebot_plugin_alconna import MsgId, on_alconna
+from nonebot.adapters.onebot.v11 import Bot
+from nonebot_plugin_alconna import Alconna, MsgId, on_alconna
 from nonebot_plugin_alconna.builtins.extensions import ReplyRecordExtension
 
-from common.Alc.Alc import arg, pm, ptc
+from common.Alc.Alc import pm, ptc
 
 __plugin_meta__ = pm(
   name="消息撤回",
@@ -11,11 +11,11 @@ __plugin_meta__ = pm(
   group="群管",
 )
 
-_revoke = arg("撤回", required=False, meta=ptc(__plugin_meta__))
+_revoke = Alconna("撤回", meta=ptc(__plugin_meta__))
 revoke = on_alconna(_revoke, extensions=[ReplyRecordExtension])
 
 
 @revoke.handle()
-async def _rk(bot: Bot, event: GroupMessageEvent, msg_id: MsgId, ext: ReplyRecordExtension):
+async def _rk(bot: Bot, msg_id: MsgId, ext: ReplyRecordExtension):
   if reply := ext.get_reply(msg_id):
     await bot.delete_msg(message_id=int(reply.id))

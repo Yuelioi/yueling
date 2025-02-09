@@ -1,7 +1,7 @@
 from nonebot import require
-from nonebot_plugin_alconna import UniMessage, on_alconna
+from nonebot_plugin_alconna import Alconna, Args, UniMessage, on_alconna
 
-from common.Alc.Alc import arg, pm, ptc, register_handler
+from common.Alc.Alc import pm, ptc, register_handler
 
 require("plugins.system.plugin")
 from common.config import config
@@ -18,14 +18,14 @@ __plugin_meta__ = pm(
   group="系统",
 )
 
-_help = arg("help", required=False, meta=ptc(__plugin_meta__))
+_help = Alconna("help", Args["commond?", str], meta=ptc(__plugin_meta__))
 
 help = on_alconna(_help, aliases={"帮助"})
 
 
-async def hp(arg: str = ""):
-  if arg:
-    return hm.search(arg)
+async def hp(commond: str = ""):
+  if commond:
+    return hm.search(commond)
 
   help_img_path = config.resource.tmp / "help.jpg"
 
