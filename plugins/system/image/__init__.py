@@ -66,6 +66,7 @@ async def manage_image(result: Arparma, event: Event, target: MsgTarget, name: s
   if target.private:
     return
   cmd = get_source_command(result)
+
   if not cmd:
     return
 

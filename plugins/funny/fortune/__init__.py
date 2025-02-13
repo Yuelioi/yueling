@@ -5,10 +5,10 @@ __fortune_version__ = "v0.4.10.post2"
 
 from nonebot.adapters import Event
 from nonebot.log import logger
-from nonebot_plugin_alconna import MsgTarget, UniMessage, on_alconna
+from nonebot_plugin_alconna import Alconna, Args, MsgTarget, UniMessage, on_alconna
 from nonebot_plugin_apscheduler import scheduler
 
-from common.Alc.Alc import arg, fullmatch, pm, ptc
+from common.Alc.Alc import fullmatch, pm, ptc
 from plugins.funny.fortune.consts import FORTUNE_THEMES
 from plugins.funny.fortune.data_source import FortuneManager, fortune_manager
 
@@ -20,7 +20,7 @@ __plugin_meta__ = pm(
 )
 
 
-_fortune = arg("今日运势", type=str, required=False, meta=ptc(__plugin_meta__))
+_fortune = Alconna("今日运势", Args["theme?", str], meta=ptc(__plugin_meta__))
 fortune = on_alconna(_fortune, priority=5, block=True, aliases={"抽签", "运势"})
 
 
@@ -35,11 +35,11 @@ async def _():
 
 
 @fortune.handle()
-async def fortune_divine(event: Event, target: MsgTarget, arg: str = ""):
-  if arg == "主题":
+async def fortune_divine(event: Event, target: MsgTarget, theme: str = ""):
+  if theme == "主题":
     return
   uid: str = str(event.get_user_id())
-  is_first, image_file = fortune_manager.divine(uid, arg)
+  is_first, image_file = fortune_manager.divine(uid, theme)
   if image_file is None:
     return "今日运势生成出错……"
   if not is_first:

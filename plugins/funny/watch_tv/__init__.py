@@ -3,9 +3,9 @@ import json
 
 import socketio
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
-from nonebot_plugin_alconna import on_alconna
+from nonebot_plugin_alconna import Alconna, Args, on_alconna
 
-from common.Alc.Alc import arg, pm, ptc
+from common.Alc.Alc import pm, ptc
 
 __plugin_meta__ = pm(
   name="看电视",
@@ -14,19 +14,19 @@ __plugin_meta__ = pm(
   group="娱乐",
 )
 
-_watch = arg("看电视")
+_watch = Alconna("看电视", Args["link", str])
 _watch.meta = ptc(__plugin_meta__)
 watch = on_alconna(_watch)
 
 
 @watch.handle()
-async def _watch_tv(event: GroupMessageEvent, arg: str):
+async def _watch_tv(event: GroupMessageEvent, link: str):
   await watch.finish("维护中")
   sio = socketio.AsyncClient(logger=True, engineio_logger=True)
 
   serverURL = "http://127.0.0.1:12201"
   await sio.connect(serverURL, transports=["websocket"], socketio_path="socket.io")
-  data = {"event_name": f"ev_{event.user_id}", "message": arg}
+  data = {"event_name": f"ev_{event.user_id}", "message": link}
   json_str = json.dumps(data)
   await sio.emit("message", json_str)
 

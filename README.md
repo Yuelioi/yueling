@@ -19,6 +19,10 @@ DISCORD 和开黑啦配置需要打开 bot.py , 删除前面的 `#`, 并且重�
 
 [nonebot/adapter-discord](https://github.com/nonebot/adapter-discord)
 
+## 资源
+
+请下载资源包 data.zip 解压到机器人根目录
+
 ## 参考
 
 框架: [https://nonebot.dev]()

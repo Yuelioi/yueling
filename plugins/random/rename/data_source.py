@@ -6,7 +6,7 @@ from common.base.Permission import Bot_admin_validate
 from common.config.message import BotIsNotAdmin
 
 
-async def group_change_name(bot: Bot, event: GroupMessageEvent, arg: str = ""):
+async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = ""):
   is_admin = await Bot_admin_validate(bot, event)
   if not is_admin:
     return BotIsNotAdmin
@@ -226,9 +226,9 @@ async def group_change_name(bot: Bot, event: GroupMessageEvent, arg: str = ""):
     "彩虹",
   ]
 
-  name = random.choice(el1) + random.choice(el2) + random.choice(el3)
+  new_name = random.choice(el1) + random.choice(el2) + random.choice(el3)
 
-  if arg:
-    name = arg
+  if name == "":
+    name = new_name
 
   await bot.set_group_card(group_id=event.group_id, user_id=event.user_id, card=name)

@@ -1,8 +1,8 @@
 import aiohttp
 from nonebot.adapters.onebot.v11 import MessageSegment
-from nonebot_plugin_alconna import on_alconna
+from nonebot_plugin_alconna import Alconna, on_alconna
 
-from common.Alc.Alc import arg, pm, ptc
+from common.Alc.Alc import pm, ptc
 
 __plugin_meta__ = pm(
   name="点歌",
@@ -11,7 +11,7 @@ __plugin_meta__ = pm(
   group="娱乐",
 )
 
-_music = arg("点歌")
+_music = Alconna("点歌")
 _music.meta = ptc(__plugin_meta__)
 music = on_alconna(_music)
 

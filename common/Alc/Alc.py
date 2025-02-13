@@ -107,20 +107,6 @@ def args(command: str, arg_limit: int = 99, type: type = str, required=True, met
   return Alconna(command, Args["args?", MultiVar(type, arg_limit)], meta=meta)
 
 
-def arg(command: str, type: type = str, required=True, meta: CommandMeta | None = None):
-  """
-  单参数
-  type: 手动指定类型, 默认str
-
-  接收参数
-  arg:type       必传
-  arg:type = ""  可选
-  """
-  if required:
-    return Alconna(command, Args["arg", type], meta=meta)
-  return Alconna(command, Args["arg?", type], meta=meta)
-
-
 def res_handle(dependency: T_Handler | None = None):
   """
   一个结果处理器，用于处理命令返回值。
