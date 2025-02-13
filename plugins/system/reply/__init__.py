@@ -30,7 +30,7 @@ reply_modify = on_alconna(_reply_modify, aliases={"删除回复", "更新回复"
 
 
 async def handle_reply(result: Arparma):
-  msg = str(result.origin)
+  msg = str(result.origin).lower()
   if res := reply_data.get(msg):
     return res.replace("回复7:", "")
 

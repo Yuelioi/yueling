@@ -23,6 +23,7 @@ pk = on_notice()
 
 async def poke_detect(bot: Bot, target: MsgTarget, event: PokeNotifyEvent):
   """戳一戳事件监听"""
+
   if target.private:
     return random.choice(
       [
@@ -47,7 +48,7 @@ async def poke_detect(bot: Bot, target: MsgTarget, event: PokeNotifyEvent):
           "敢乱戳本小姐, 奖励N级禁言卡「{}」分钟",
         ]
 
-        options = [1, 5, 15, 30]
+        options = [1, 500, 1500, 3000]
         weights = [5, 15, 30, 50]
 
         random_number = random.choices(options, weights)[0]

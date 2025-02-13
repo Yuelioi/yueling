@@ -2,6 +2,7 @@ import datetime
 import os
 
 import aiofiles
+from nonebot import logger
 from nonebot_plugin_alconna import Image
 
 from common.config import config
@@ -91,11 +92,12 @@ async def add_images(cmd: str, group_id, user_id, arg: str, imgs: list[Image] = 
     )
 
     if ret:
-      msgs += f"图片{index+1}上传成功\n"
+      msgs += f"图片{index + 1}上传成功\n"
+      logger.info(f"上传图片:{trg_path}")
       async with aiofiles.open(trg_path, "wb") as f:
         await f.write(img_data)
     else:
-      msgs += f"图片{index+1}上传失败\n"
+      msgs += f"图片{index + 1}上传失败\n"
   return msgs
 
 
