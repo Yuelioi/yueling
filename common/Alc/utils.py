@@ -45,6 +45,5 @@ def get_source_command(
   """
   获取 alc context 匹配命令, 用于获取aliases
   """
-  match_object = result.context.get("$shortcut.trigger")
-
+  match_object = result.context.get("$shortcut.trigger") or result.header_match.result
   return match_object

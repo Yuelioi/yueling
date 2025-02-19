@@ -25,6 +25,6 @@ DISCORD 和开黑啦配置需要打开 bot.py , 删除前面的 `#`, 并且重�
 
 ## 参考
 
-框架: [https://nonebot.dev]()
+框架: [https://nonebot.dev](https://nonebot.dev)
 
 协议: [LagrangeDev/Lagrange.Core](https://github.com/LagrangeDev/Lagrange.Core)

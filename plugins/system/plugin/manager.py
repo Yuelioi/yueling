@@ -38,6 +38,8 @@ class HelpManager(BaseModel):
         continue
       extra = cmd.meta.extra
       name = extra.get("name", "未命名")
+      if name == "未命名":
+        continue
       group = extra.get("group", "未命名")
       usage = cmd.meta.usage or "未设置用法"
       hidden = extra.get("hidden", False)
