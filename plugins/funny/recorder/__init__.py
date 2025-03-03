@@ -1,21 +1,22 @@
 import time
 
+from nonebot import on_message
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
-from nonebot_plugin_alconna import on_alconna
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import msg, pm, ptc
 from common.config import config
 
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="recorder",
   description="特定群友欢迎图",
   usage="定时发送",
-  group="funny",
-  hidden=True,
+  extra={
+    "group": "娱乐",
+    "hidden": True,
+  },
 )
-_recorder = msg()
-_recorder.meta = ptc(__plugin_meta__)
-recorder = on_alconna(_recorder)
+
+recorder = on_message()
 
 # 特定群友 -> recorder
 daxiaojie_last_time = 0

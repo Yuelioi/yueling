@@ -2,21 +2,21 @@ import asyncio
 import json
 
 import socketio
+from nonebot import on_command
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
-from nonebot_plugin_alconna import Alconna, Args, on_alconna
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import pm, ptc
-
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="看电视",
   description="通过qq打开电脑链接(需要本地安装app)",
   usage="""看电视 + 链接""",
-  group="娱乐",
+  extra={
+    "group": "娱乐",
+  },
 )
 
-_watch = Alconna("看电视", Args["link", str])
-_watch.meta = ptc(__plugin_meta__)
-watch = on_alconna(_watch)
+
+watch = on_command("看电视")
 
 
 @watch.handle()

@@ -2,28 +2,28 @@ import random
 import re
 from typing import cast
 
-from nonebot import require
+from nonebot import on_message, require
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.onebot.v11 import Bot as BotV11
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
-from nonebot_plugin_alconna import MsgTarget, on_alconna
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import msg, pm, ptc
 from common.base.Permission import User_admin_validate
 
 require("plugins.system.plugin")
 from plugins.system.plugin.manager import hm
 
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="复读",
   description="基于一定规则重复群友的话",
   usage="""被动技能""",
-  group="娱乐",
+  extra={
+    "group": "娱乐",
+  },
 )
 
-_repeater = msg()
-_repeater.meta = ptc(__plugin_meta__)
-repeater = on_alconna(_repeater)
+
+repeater = on_message()
 
 
 shortest = 2  # 最短复读字符
@@ -37,16 +37,11 @@ whitelist = [48896449, 435826135]
 @repeater.handle()
 async def repeater_handler(
   bot: Bot,
-  event: Event,
-  target: MsgTarget,
+  event: GroupMessageEvent,
 ):
   global last_message, message_times
 
   message, raw_message = _message_preprocess(event.get_plaintext())
-
-  # 跳过私聊
-  if target.private:
-    return
 
   if not bot.adapter.get_name() == "OneBot V11":
     return
@@ -54,8 +49,8 @@ async def repeater_handler(
   botv11 = cast(BotV11, bot)
   eventV11 = cast(GroupMessageEvent, event)
 
-  gid = str(target.id)
-  uid = str(event.get_user_id())
+  gid = str(event.group_id)
+  uid = str(event.user_id)
 
   # 过滤其他插件
   extra_commands = ["语录", "表情", "火车"]

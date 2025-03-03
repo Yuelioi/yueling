@@ -1,22 +1,21 @@
 import random
 
+from nonebot import on_fullmatch
 from nonebot.adapters import Bot
-from nonebot_plugin_alconna import MsgTarget, on_alconna
+from nonebot.plugin import PluginMetadata
+from nonebot_plugin_alconna import MsgTarget
 from nonebot_plugin_userinfo import EventUserInfo, UserInfo
 
-from common.Alc.Alc import fullmatch, pm, ptc, register_handler
-from common.Alc.Permission import Bot_Checker
-
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="我要睡觉",
   description="别水群了, 赶紧睡觉, 强制睡眠",
   usage="""我要睡觉""",
-  group="娱乐",
+  extra={
+    "group": "娱乐",
+  },
 )
 
-_sleep = fullmatch("我要睡觉")
-_sleep.meta = ptc(__plugin_meta__)
-sleep = on_alconna(_sleep)
+sleep = on_fullmatch("我要睡觉")
 
 
 sleep_words = [
@@ -27,7 +26,8 @@ sleep_words = [
 ]
 
 
-@sleep.assign("$main", additional=Bot_Checker)
+# TODO 权限验证
+@sleep.handle()
 async def sleep_handle(bot: Bot, target: MsgTarget, user_info: UserInfo = EventUserInfo()):
   if target.private:
     return
@@ -42,6 +42,3 @@ async def sleep_handle(bot: Bot, target: MsgTarget, user_info: UserInfo = EventU
     duration=sleep_time * 60 * 60,
   )
   await sleep.finish(f"{username}{sleep_word},{sleep_time}小时后见!")
-
-
-register_handler(sleep, sleep_handle)
