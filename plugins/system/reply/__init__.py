@@ -40,7 +40,9 @@ register_handler(reply, handle_reply)
 
 def reply_modify_handle(result: Arparma, target: MsgTarget, args: list[str]):
   if "添加回复" in result.header_match.origin:
-    rep = Reply(qq=int(target.id), keyword=args[0], reply=" ".join(args[1:]), group=None)
+    content = " ".join(args[1:])
+    content = content.replace("\\n", "\n")
+    rep = Reply(qq=int(target.id), keyword=args[0], reply=content, group=None)
     if rpm.insert_data(rep):
       update_reply()
       return "添加成功"

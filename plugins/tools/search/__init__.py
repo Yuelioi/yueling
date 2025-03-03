@@ -36,7 +36,7 @@ async def search_all(result: Arparma):
 
   _type, content = extract_search(msgs)
   if not _type:
-    return "请输入搜索类型"
+    return
 
   if not content:
     return "请输入搜索内容"
