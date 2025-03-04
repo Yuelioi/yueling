@@ -2,12 +2,14 @@ import os
 import shutil
 from pathlib import Path
 
+from nonebot import on_command, on_fullmatch
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.matcher import Matcher
-from nonebot_plugin_alconna import on_alconna
+from nonebot.permission import Permission
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import args, fullmatch, multi_args, pm, ptc
-from common.Alc.Permission import Bot_Checker, User_Checker
+from common.base.Depends import Args
+from common.base.Permission import Superuser_validate, User_admin_validate
 from plugins.group.file.backup import bm
 from plugins.group.file.models import LocalFile, QQFile
 from plugins.group.file.utils import get_folder, get_root
@@ -15,28 +17,18 @@ from plugins.group.file.utils import get_folder, get_root
 WorkingMessage = "正在处理中/未知错误"
 
 
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="群文件管理",
   description="群文件管理, 部分需要管理权限",
   usage="""群文件 ~备份/~恢复/~清理/~整理 以及 本地文件清理""",
-  group="群管",
+  extra={"group": "群管"},
 )
 
-_backup = fullmatch("群文件备份")
-_recovery = fullmatch("群文件恢复")
-_organize = multi_args("群文件整理", ("folder", str), ("exts", str, 99))
-_clear = args("群文件清理", 20, required=False)
-_local = fullmatch("本地文件清理")
-
-
-_backup.meta = ptc(__plugin_meta__)
-
-
-backup = on_alconna(_backup)
-recovery = on_alconna(_recovery)
-clear = on_alconna(_clear)
-organize = on_alconna(_organize)
-local = on_alconna(_local)
+backup = on_fullmatch("群文件备份", permission=Permission(Superuser_validate) | Permission(User_admin_validate))
+recovery = on_fullmatch("群文件恢复", permission=Permission(Superuser_validate) | Permission(User_admin_validate))
+organize = on_command("群文件整理", permission=Permission(Superuser_validate) | Permission(User_admin_validate))
+clear = on_command("群文件清理", permission=Permission(Superuser_validate) | Permission(User_admin_validate))
+local = on_fullmatch("本地文件清理", permission=Permission(Superuser_validate) | Permission(User_admin_validate))
 
 
 async def run(event: GroupMessageEvent, matcher: Matcher, arg: str):
@@ -47,7 +39,7 @@ async def run(event: GroupMessageEvent, matcher: Matcher, arg: str):
   bm.event_info.start(bm.config.backup_dir / str(event.group_id))
 
 
-@backup.assign("$main", additional=User_Checker)
+@backup.handle()
 async def _bk(
   bot: Bot,
   event: GroupMessageEvent,
@@ -70,7 +62,7 @@ async def _bk(
     }
 
     # 计算需要下载的文件
-    toDownloadFiles: list[QQFile] = [f for f in bm.event_info.qqfile_entries if f"{f.get('folder_name','')}_{f['file_name']}" not in localFile]
+    toDownloadFiles: list[QQFile] = [f for f in bm.event_info.qqfile_entries if f"{f.get('folder_name', '')}_{f['file_name']}" not in localFile]
 
     await bm.backup(bot, toDownloadFiles)
 
@@ -78,7 +70,7 @@ async def _bk(
       群文件数量:{len(bm.event_info.qqfile_entries)}
       需备份数量:{len(toDownloadFiles)}
       耗时: {bm.event_info.duration}秒
-      {'' if not bm.event_info.failed_files else f'失败:{bm.event_info.failed_files}'}
+      {"" if not bm.event_info.failed_files else f"失败:{bm.event_info.failed_files}"}
       """.strip()
     await backup.send(msg)
   except Exception as e:
@@ -87,7 +79,7 @@ async def _bk(
     bm.event_info.finish()
 
 
-@recovery.assign("$main", additional=User_Checker & Bot_Checker)
+@recovery.handle()
 async def _rc(bot: Bot, event: GroupMessageEvent, matcher: Matcher):
   await run(event, matcher, "恢复中,请稍后…")
   await bm.collections(bot=bot, group_id=event.group_id, contain_root=True, contain_folder=True)
@@ -96,7 +88,7 @@ async def _rc(bot: Bot, event: GroupMessageEvent, matcher: Matcher):
     local_dir = bm.config.backup_dir / str(event.group_id)
     if not Path(local_dir).exists():
       await recovery.finish("本地暂无备份文件")
-    webFiles = {f"{file.get('folder_name','')}_{file['file_name']}": file for file in bm.event_info.qqfile_entries}
+    webFiles = {f"{file.get('folder_name', '')}_{file['file_name']}": file for file in bm.event_info.qqfile_entries}
     webFolders = {qqfolder["folder_name"]: 1 for qqfolder in bm.event_info.qqfolder_entries}
 
     toUploadFiles: list[LocalFile] = []
@@ -128,7 +120,7 @@ async def _rc(bot: Bot, event: GroupMessageEvent, matcher: Matcher):
       本地文件数量:{file_count}
       已上传数量:{len(toUploadFiles)}
       耗时: {bm.event_info.duration}秒
-      {'' if not bm.event_info.failed_files else f'失败:{bm.event_info.failed_files}'}""".strip()
+      {"" if not bm.event_info.failed_files else f"失败:{bm.event_info.failed_files}"}""".strip()
     await recovery.send(msg)
   except Exception as e:
     await recovery.send(f"恢复过程中发生错误: {e}")
@@ -136,13 +128,13 @@ async def _rc(bot: Bot, event: GroupMessageEvent, matcher: Matcher):
     bm.event_info.finish()
 
 
-@clear.assign("$main", additional=User_Checker & Bot_Checker)
-async def _cl(bot: Bot, event: GroupMessageEvent, matcher: Matcher, args: list[str] = []):
+@clear.handle()
+async def _cl(bot: Bot, event: GroupMessageEvent, matcher: Matcher, args: list[str] = Args(0)):
   await run(event, matcher, "清理中,请稍后…")
 
   try:
     await bm.collections(bot=bot, group_id=event.group_id, contain_root=True, contain_folder=False, ignore_extensions=[])
-    if args == []:
+    if not args:
       args = bm.config.ignore_extensions
     await bm.clear(bot, event.group_id, args)
     if bm.event_info.success_count > 0:
@@ -155,9 +147,12 @@ async def _cl(bot: Bot, event: GroupMessageEvent, matcher: Matcher, args: list[s
     bm.event_info.finish()
 
 
-@organize.assign("$main", additional=User_Checker & Bot_Checker)
-async def _og(bot: Bot, event: GroupMessageEvent, matcher: Matcher, folder: str, exts: list[str]):
+@organize.handle()
+async def _og(bot: Bot, event: GroupMessageEvent, matcher: Matcher, args: list[str] = Args(2)):
   await run(event, matcher, "整理中,请稍后…")
+
+  folder = args[0]
+  exts = args[1:]
 
   try:
     await bm.collections(bot=bot, group_id=event.group_id, contain_root=True, contain_folder=False, ignore_extensions=[])
@@ -195,7 +190,7 @@ async def _og(bot: Bot, event: GroupMessageEvent, matcher: Matcher, folder: str,
     bm.event_info.finish()
 
 
-@local.assign("$main", additional=User_Checker & Bot_Checker)
+@local.handle()
 async def _ll(
   matcher: Matcher,
   event: GroupMessageEvent,

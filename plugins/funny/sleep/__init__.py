@@ -1,10 +1,11 @@
 import random
 
 from nonebot import on_fullmatch
-from nonebot.adapters import Bot
+from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.plugin import PluginMetadata
-from nonebot_plugin_alconna import MsgTarget
-from nonebot_plugin_userinfo import EventUserInfo, UserInfo
+
+from common.base.Permission import Bot_admin_validate, User_admin_validate
+from common.base.utils import get_user_info
 
 __plugin_meta__ = PluginMetadata(
   name="我要睡觉",
@@ -28,17 +29,16 @@ sleep_words = [
 
 # TODO 权限验证
 @sleep.handle()
-async def sleep_handle(bot: Bot, target: MsgTarget, user_info: UserInfo = EventUserInfo()):
-  if target.private:
-    return
-
+async def sleep_handle(bot: Bot, event: GroupMessageEvent):
   sleep_time = random.randint(5, 8)
   sleep_word = sleep_words[random.randint(0, len(sleep_words) - 1)]
 
-  username = user_info.user_name
-  await bot.set_group_ban(
-    group_id=target.id,
-    user_id=user_info.user_id,
-    duration=sleep_time * 60 * 60,
-  )
-  await sleep.finish(f"{username}{sleep_word},{sleep_time}小时后见!")
+  userinfo = await get_user_info(bot, event)
+
+  if await Bot_admin_validate(bot, event) and not await User_admin_validate(bot, event):
+    await bot.set_group_ban(
+      group_id=event.group_id,
+      user_id=event.user_id,
+      duration=sleep_time * 60 * 60,
+    )
+  await sleep.finish(f"{userinfo['nickname']}{sleep_word},{sleep_time}小时后见!")

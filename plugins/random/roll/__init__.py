@@ -1,7 +1,12 @@
 import random
 import re
 
+from nonebot import on_command
 from nonebot.adapters import Event
+from nonebot.adapters.onebot.v11 import MessageSegment
+from nonebot.plugin import PluginMetadata
+
+from common.base.Depends import Args
 
 random_reply_list = [
   "emmm,要不试试「{}」",
@@ -11,25 +16,22 @@ random_reply_list = [
   "月灵想要「{}」!",
 ]
 
-from nonebot_plugin_alconna import UniMessage, on_alconna
 
-from common.Alc.Alc import args, pm, ptc
-
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="roll",
   description="roll 点",
   usage="""roll 整数 | 整数 整数 | x y z...""",
-  group="随机",
+  extra={
+    "group": "随机",
+  },
 )
 
 
-random_match = args("roll")
-random_match.meta = ptc(__plugin_meta__)
-random_cmd = on_alconna(random_match)
+random_cmd = on_command("roll")
 
 
 @random_cmd.handle()
-async def random_roll(event: Event, args: list[str] = []):
+async def random_roll(event: Event, args: list[str] = Args()):
   if len(args) > 1:
     if all(re.match(r"^-?\d+$", arg) for arg in args):
       count = int(args[0])
@@ -49,4 +51,4 @@ async def random_roll(event: Event, args: list[str] = []):
     else:
       msg = "请输入正确的指令(整数 | 整数 整数 | x y z)"
 
-  await random_cmd.finish(UniMessage.at(event.get_user_id()) + UniMessage.text(msg))
+  await random_cmd.finish(MessageSegment.at(event.get_user_id()) + msg)

@@ -18,7 +18,7 @@ matcher = on_command("chat")
 
 
 @matcher.handle()
-async def chat_handle(args=Args(1, 99)):
+async def chat_handle(args=Args()):
   content = " ".join(args)
 
   msg = chat_ai(content)

@@ -1,16 +1,19 @@
-from nonebot_plugin_alconna import Alconna, Args, on_alconna
+from nonebot import on_command
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import pm, ptc, register_handler
+from common.base.Handle import register_handler
 from plugins.random.rename.data_source import group_change_name
 
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="随机取名",
   description="随机取群昵称",
   usage="""随机取名""",
-  group="随机",
+  extra={
+    "group": "随机",
+  },
 )
 
-_rename = Alconna("随机取名", Args["name?", str], meta=ptc(__plugin_meta__))
-rename = on_alconna(_rename)
+
+rename = on_command("随机取名")
 
 register_handler(rename, group_change_name)

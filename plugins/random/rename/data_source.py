@@ -2,11 +2,12 @@ import random
 
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 
+from common.base.Depends import Arg
 from common.base.Permission import Bot_admin_validate
 from common.config.message import BotIsNotAdmin
 
 
-async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = ""):
+async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = Arg()):
   is_admin = await Bot_admin_validate(bot, event)
   if not is_admin:
     return BotIsNotAdmin

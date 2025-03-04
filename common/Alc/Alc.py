@@ -2,7 +2,6 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any, cast
 
-from arclet.alconna import AllParam
 from nonebot import logger
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
 from nonebot.exception import FinishedException

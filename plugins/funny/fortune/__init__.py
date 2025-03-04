@@ -4,8 +4,7 @@ __fortune_version__ = "v0.4.10.post2"
 """
 
 from nonebot import on_command
-from nonebot.adapters import Event
-from nonebot.adapters.onebot.v11 import MessageSegment
+from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 from nonebot.log import logger
 from nonebot.plugin import PluginMetadata
 from nonebot_plugin_apscheduler import scheduler
@@ -21,11 +20,11 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
-fortune = on_command("今日运势", priority=5, block=True, aliases={"抽签", "运势"})
+fortune = on_command(cmd="今日运势", aliases={"抽签", "运势"})
 
 
 @fortune.handle()
-async def fortune_divine(event: Event, theme=Arg()):
+async def fortune_divine(event: GroupMessageEvent, theme=Arg()):
   uid: str = str(event.get_user_id())
   is_first, image_file = fortune_manager.divine(uid, theme)
   if image_file is None:

@@ -1,22 +1,22 @@
 import random
 
+from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, MessageSegment
-from nonebot_plugin_alconna import Alconna, on_alconna
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import pm, ptc, register_handler
+from common.base.Handle import register_handler
 
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="随机群友",
   description="随机抽群友",
   usage="""抽群友/来点群友/抽xx群友/抽男群友/抽老婆/抽老公""",
-  group="随机",
+  extra={
+    "group": "随机",
+  },
 )
 
 
-_member = Alconna("re:抽(.*)群友(.*)|随机.*群友.*|来个.*群友.*|来点.*群友.*")
-
-_member.meta = ptc(__plugin_meta__)
-member = on_alconna(_member)
+member = on_regex("抽(.*)群友(.*)|随机.*群友.*|来个.*群友.*|来点.*群友.*")
 
 
 async def random_member(bot: Bot, event: GroupMessageEvent):

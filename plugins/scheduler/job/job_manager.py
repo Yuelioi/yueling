@@ -85,7 +85,7 @@ class Job:
     trigger_kwargs = {
       "year": self.year,
       "month": self.month,
-      "week": self.week if isinstance(self.week, int) else self.week,
+      "week": self.week,
       "day": self.day,
       "hour": self.hour,
       "minute": self.minute,

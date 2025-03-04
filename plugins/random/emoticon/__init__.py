@@ -1,31 +1,31 @@
 import random
 from pathlib import Path
 
-from nonebot_plugin_alconna import AlconnaMatcher, Arparma, UniMessage, on_alconna
+from nonebot import on_message
+from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
+from nonebot.matcher import Matcher
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import msg, pm, ptc, register_handler
 from common.utils import get_random_images
 
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="表情包",
   description="查询表情包",
   usage="""发送: 空格 + [关键词]/n 查询:2个空格[关键词]""",
-  group="随机",
+  extra={
+    "group": "随机",
+  },
 )
 
 
-meta = ptc(__plugin_meta__)
-
-_emoticon = msg()
-_emoticon.meta = ptc(__plugin_meta__)
-emoticon = on_alconna(_emoticon, priority=0)
+emoticon = on_message()
 
 
 @emoticon.handle()
-async def emoticon_handle(result: Arparma, matcher: AlconnaMatcher):
+async def emoticon_handle(event: GroupMessageEvent, matcher: Matcher):
   cmd = ""
   args = ""
-  text = str(result.origin)
+  text = event.get_plaintext()
 
   if text.startswith("  "):
     cmd = "查询表情"
@@ -51,6 +51,6 @@ async def emoticon_handle(result: Arparma, matcher: AlconnaMatcher):
 
       await emoticon.send(f"共找到{len(matching_files)}个:" + "\n".join(matching_files[:10]))
     elif cmd == "表情":
-      await emoticon.send(UniMessage.image(path=random.choice(matching_files)))
+      await emoticon.send(MessageSegment.image(file=random.choice(matching_files)))
 
     matcher.stop_propagation()
