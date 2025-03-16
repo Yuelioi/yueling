@@ -23,7 +23,7 @@ def get_command_args(state: T_State):
   return []
 
 
-def Args(min_num: int = 1, max_num: int = 99):
+def Args(min_num: int = 1, max_num: int = 999):
   """提取多个参数 以空格或者回车分割"""
 
   async def dependency(matcher: Matcher, state: T_State):
@@ -48,7 +48,7 @@ def Arg(required=False):
   return Depends(dependency)
 
 
-async def get_at_users(bot: Bot, event: Event, state: T_State):
+async def get_at_users(event: Event, state: T_State):
   at_users: set[int] = set()
 
   # 添加数字型qq
@@ -57,8 +57,8 @@ async def get_at_users(bot: Bot, event: Event, state: T_State):
     at_users.update(set(extract_qq_numbers(" ".join(args))))
 
   # 添加bot本体
-  if event.is_tome():
-    at_users.add(int(bot.self_id))
+  # if event.is_tome():
+  #   at_users.add(int(bot.self_id))
 
   if isinstance(event, GroupMessageEvent):
     for seg in event.message:
@@ -86,18 +86,19 @@ def get_imgs(event: Event) -> list[str]:
   return reply_images + current_images
 
 
-def Ats(min_num: int = 1, max_num: int = 1):
+def Ats(min_num: int = 1, max_num: int = 99):
   async def dependeny(bot: Bot, event: Event, matcher: Matcher, state: T_State):
-    at_users = await get_at_users(bot, event, state)
+    at_users = await get_at_users(event, state)
     if len(at_users) > max_num or len(at_users) < min_num:
       await matcher.finish()
+    return at_users
 
   return Depends(dependeny)
 
 
 def At(required=False):
   async def dependency(bot: Bot, event: Event, matcher: Matcher, state: T_State):
-    at_users = await get_at_users(bot, event, state)
+    at_users = await get_at_users(event, state)
     if required:
       if not at_users:
         await matcher.finish("请@一个用户后再试")
@@ -108,12 +109,13 @@ def At(required=False):
   return Depends(dependency)
 
 
-def Imgs(min_num: int = 1, max_num: int = 1):
+def Imgs(min_num: int = 1, max_num: int = 99):
   async def dependency(event: Event, matcher: Matcher):
     imgs = get_imgs(event)
-
     if len(imgs) > max_num or len(imgs) < min_num:
       await matcher.finish()
+
+    return imgs
 
   return Depends(dependency)
 

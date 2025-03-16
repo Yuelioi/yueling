@@ -3,7 +3,6 @@ import os
 
 import aiofiles
 from nonebot import logger
-from nonebot_plugin_alconna import Image
 
 from common.config import config
 from common.database.ImageManager import ImageData, im
@@ -59,13 +58,11 @@ def name_gene(cmd: str = "", filename: str = "", group="", uploader=""):
     return generate_random_code()
 
 
-async def add_images(cmd: str, group_id, user_id, arg: str, imgs: list[Image] = []):
+async def add_images(cmd: str, group_id, user_id, arg: str, imgs: list[str] = []):
   msgs = ""
 
   for index, img in enumerate(imgs):
-    if not img.url:
-      continue
-    virtual_file = await api.fetch_image_from_url_ssl(img.url)
+    virtual_file = await api.fetch_image_from_url_ssl(img)
 
     img_data = virtual_file.read()
 
@@ -79,38 +76,42 @@ async def add_images(cmd: str, group_id, user_id, arg: str, imgs: list[Image] = 
     suffix = detect_image_type(img_data)
 
     trg_path = f"{config.resource.images}/{cat}/{trg_name}.{suffix}"
+    logger.info(f"图片{index + 1}保存路径:{trg_path}")
 
-    ret = im.insert_data(
-      ImageData(
-        path=trg_path,
-        category=cat,
-        uploader=user_id,
-        upload_time=datetime.datetime.now(),
-        hash=file_hash,
-        score=0,
-      )
-    )
-
-    if ret:
-      msgs += f"图片{index + 1}上传成功\n"
-      logger.info(f"上传图片:{trg_path}")
+    try:
       async with aiofiles.open(trg_path, "wb") as f:
         await f.write(img_data)
-    else:
+
+      ret = im.insert_data(
+        ImageData(
+          path=trg_path,
+          category=cat,
+          uploader=user_id,
+          upload_time=datetime.datetime.now(),
+          hash=file_hash,
+          score=0,
+        )
+      )
+
+      if ret:
+        msgs += f"图片{index + 1}上传成功\n"
+        logger.info(f"上传图片:{trg_path}")
+    except Exception as e:
+      logger.info(f"上传图片失败:{trg_path}", e)
       msgs += f"图片{index + 1}上传失败\n"
   return msgs
 
 
-async def delete_image(user_id: int, img: Image):
+async def delete_image(user_id: int, img: str):
   """删除图片 并加入回收站"""
 
   if user_id not in [435826135, 963036493, 1239245970, 1284773289, 405850498]:
     return "就凭你也想访问本小姐的系统!"
 
-  if not img.url:
+  if not img:
     return "图片链接错误"
 
-  virtual_file = await api.fetch_image_from_url_ssl(img.url)
+  virtual_file = await api.fetch_image_from_url_ssl(img)
   result, err = im.remove_image(virtual_file)
   if err is None:
     if result:

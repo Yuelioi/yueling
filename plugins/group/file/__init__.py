@@ -65,7 +65,7 @@ async def _bk(
     toDownloadFiles: list[QQFile] = [f for f in bm.event_info.qqfile_entries if f"{f.get('folder_name', '')}_{f['file_name']}" not in localFile]
 
     await bm.backup(bot, toDownloadFiles)
-
+    bm.event_info.finish()
     msg = f"""-----备份群文件完成-----
       群文件数量:{len(bm.event_info.qqfile_entries)}
       需备份数量:{len(toDownloadFiles)}
@@ -76,7 +76,7 @@ async def _bk(
   except Exception as e:
     await backup.send(f"备份过程中发生错误: {e}")
   finally:
-    bm.event_info.finish()
+    bm.event_info.next()
 
 
 @recovery.handle()
@@ -115,7 +115,7 @@ async def _rc(bot: Bot, event: GroupMessageEvent, matcher: Matcher):
       toUploadFiles=toUploadFiles,
       need_create_folder_names=to_create_folder_names,
     )
-
+    bm.event_info.finish()
     msg = f"""-----恢复群文件完成-----
       本地文件数量:{file_count}
       已上传数量:{len(toUploadFiles)}
@@ -125,7 +125,7 @@ async def _rc(bot: Bot, event: GroupMessageEvent, matcher: Matcher):
   except Exception as e:
     await recovery.send(f"恢复过程中发生错误: {e}")
   finally:
-    bm.event_info.finish()
+    bm.event_info.next()
 
 
 @clear.handle()
@@ -138,13 +138,14 @@ async def _cl(bot: Bot, event: GroupMessageEvent, matcher: Matcher, args: list[s
       args = bm.config.ignore_extensions
     await bm.clear(bot, event.group_id, args)
     if bm.event_info.success_count > 0:
+      bm.event_info.finish()
       await clear.send(f"清理完毕，共清理{bm.event_info.success_count}个文件, 耗时 {bm.event_info.duration:.2f} 秒")
     else:
       await clear.send("您的群文件很干净噢, 请再接再厉")
   except Exception as e:
     await clear.send(f"删除时发生错误：{e}")
   finally:
-    bm.event_info.finish()
+    bm.event_info.next()
 
 
 @organize.handle()
@@ -182,12 +183,12 @@ async def _og(bot: Bot, event: GroupMessageEvent, matcher: Matcher, args: list[s
         target_directory=qqFolder["folder_id"],
       )
       bm.event_info.success_count += 1
-
+    bm.event_info.finish()
     await organize.send(f"共收纳{bm.event_info.success_count}个文件, 耗时 {bm.event_info.duration:.2f} 秒")
   except Exception as e:
     await organize.send(f"整理时发生错误：{e}")
   finally:
-    bm.event_info.finish()
+    bm.event_info.next()
 
 
 @local.handle()
@@ -204,4 +205,4 @@ async def _ll(
   except Exception as e:
     await local.send(f"删除本地备份时发生错误：{e}")
   finally:
-    bm.event_info.finish()
+    bm.event_info.next()

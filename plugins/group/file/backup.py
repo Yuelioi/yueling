@@ -51,9 +51,13 @@ class BackupEventInfo:
     if not self.backup_directory.exists():
       self.backup_directory.mkdir(parents=True)
 
+  # 结束任务
   def finish(self):
-    self.is_processing = False
     self.duration = round(time.time() - self.start_time, 2)
+
+  # 下一个任务
+  def next(self):
+    self.is_processing = False
 
 
 class BackupManager:

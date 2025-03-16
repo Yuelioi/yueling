@@ -1,27 +1,22 @@
 import asyncio
 import subprocess
 
-from nonebot import logger
-from nonebot_plugin_alconna import Alconna, Args, on_alconna
-from nonebot_plugin_alconna.builtins.extensions.reply import ReplyMergeExtension
+from nonebot import logger, on_command
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import pm, ptc
-from common.Alc.Permission import Superuser_Checker
-
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="重启服务",
   description="重启服务",
   usage="""重启 + [服务名称:la/bot]""",
-  group="系统",
-  hidden=True,
+  extra={
+    "group": "系统",
+    "hidden": True,
+  },
 )
-_reboot = Alconna("重启", Args["name", str])
-
-_reboot.meta = ptc(__plugin_meta__)
-reboot = on_alconna(_reboot, extensions=[ReplyMergeExtension])
+reboot = on_command("重启")
 
 
-@reboot.assign(path="$main", additional=Superuser_Checker)
+@reboot.handle()
 async def rb(name: str):
   services = {"la": "la", "bot": "bot"}
   service = services.get(name, "bot")

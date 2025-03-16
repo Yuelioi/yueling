@@ -3,8 +3,6 @@ from typing import Any, Awaitable, Callable, cast  # noqa
 
 import nonebot
 from nonebot.adapters import Bot, Event
-from nonebot.adapters.discord import Bot as DiscordBot
-from nonebot.adapters.discord.event import MessageEvent as DiscordEvent
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, PrivateMessageEvent
 from nonebot.permission import Permission
 
@@ -34,8 +32,7 @@ class PermissionChecker:
 
 def skip_admin_check(bot: Bot, event: Event):
   """跳过权限验证"""
-  if isinstance(event, DiscordEvent) and isinstance(bot, DiscordBot):
-    return True
+
   if isinstance(event, PrivateMessageEvent):
     return True
   return False
@@ -55,7 +52,7 @@ async def admin_validate(bot: Bot, group_id: int, user_id: int) -> bool:
 
 def Superuser_validate(event: GroupMessageEvent) -> bool:
   """判断用户是否为超级用户"""
-  return event.user_id in config.superusers
+  return str(event.user_id) in config.superusers
 
 
 async def User_admin_validate(bot: Bot, event: GroupMessageEvent) -> bool:
