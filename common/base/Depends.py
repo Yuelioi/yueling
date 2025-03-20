@@ -48,7 +48,7 @@ def Arg(required=False):
   return Depends(dependency)
 
 
-async def get_at_users(event: Event, state: T_State):
+async def get_at_users(bot: Bot, event: GroupMessageEvent, state: T_State):
   at_users: set[int] = set()
 
   # 添加数字型qq
@@ -57,15 +57,18 @@ async def get_at_users(event: Event, state: T_State):
     at_users.update(set(extract_qq_numbers(" ".join(args))))
 
   # 添加bot本体
-  # if event.is_tome():
-  #   at_users.add(int(bot.self_id))
+  if event.is_tome():
+    at_users.add(int(bot.self_id))
 
-  if isinstance(event, GroupMessageEvent):
-    for seg in event.message:
-      if seg.type == "at":
-        qq = seg.data.get("qq")
-        if qq and qq.isdigit():
-          at_users.add(int(qq))
+  # 过滤掉回复信息
+  if event.reply:
+    return []
+
+  for seg in event.message:
+    if seg.type == "at":
+      qq = seg.data.get("qq")
+      if qq and qq.isdigit():
+        at_users.add(int(qq))
   return list(at_users)
 
 
@@ -87,8 +90,8 @@ def get_imgs(event: Event) -> list[str]:
 
 
 def Ats(min_num: int = 1, max_num: int = 99):
-  async def dependeny(bot: Bot, event: Event, matcher: Matcher, state: T_State):
-    at_users = await get_at_users(event, state)
+  async def dependeny(bot: Bot, event: GroupMessageEvent, matcher: Matcher, state: T_State):
+    at_users = await get_at_users(bot, event, state)
     if len(at_users) > max_num or len(at_users) < min_num:
       await matcher.finish()
     return at_users
@@ -97,8 +100,8 @@ def Ats(min_num: int = 1, max_num: int = 99):
 
 
 def At(required=False):
-  async def dependency(bot: Bot, event: Event, matcher: Matcher, state: T_State):
-    at_users = await get_at_users(event, state)
+  async def dependency(bot: Bot, event: GroupMessageEvent, matcher: Matcher, state: T_State):
+    at_users = await get_at_users(bot, event, state)
     if required:
       if not at_users:
         await matcher.finish("请@一个用户后再试")

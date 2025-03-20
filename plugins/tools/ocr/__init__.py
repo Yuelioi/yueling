@@ -1,24 +1,18 @@
 import aiohttp
-from nonebot_plugin_alconna import Alconna, Args, Image, on_alconna
-from nonebot_plugin_alconna.builtins.extensions.reply import ReplyMergeExtension
+from nonebot import on_command
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import pm, ptc
+from common.base.Depends import Arg, Img
 from common.utils import api
 
-__plugin_meta__ = pm(
-  name="ocr",
-  description="识别图片里的文字",
-  usage="""ocr [中文/日语/英文] + [图片]""",
-  group="工具",
-)
+__plugin_meta__ = PluginMetadata(name="ocr", description="识别图片里的文字", usage="""ocr [中文/日语/英文] + [图片]""", extra={"group": "工具"})
 
-meta = ptc(__plugin_meta__)
-_ocr = Alconna("ocr", Args["language?", str]["img", Image], meta=meta)
-ocr = on_alconna(_ocr, extensions=[ReplyMergeExtension])
+
+ocr = on_command("ocr")
 
 
 @ocr.handle()
-async def _(img: Image, language: str = "chi_sim"):
+async def _(img=Img(required=True), language=Arg()):
   async with aiohttp.ClientSession() as session:
     if not img.url:
       return

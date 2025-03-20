@@ -21,9 +21,7 @@ class SingleMessage(BaseModel):
 
 
 @app.post("/send")
-async def send_message(
-  group_id: int = Form(0), user_id: int = Form(0), messages: str = Form(...), files: list[UploadFile] = File(None)
-):
+async def send_message(group_id: int = Form(0), user_id: int = Form(0), messages: str = Form(...), files: list[UploadFile] = File(None)):
   bot = cast(Bot, get_bot())
 
   if not (group_id or user_id):

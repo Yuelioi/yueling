@@ -11,9 +11,7 @@ __plugin_meta__ = PluginMetadata(
   name="我要睡觉",
   description="别水群了, 赶紧睡觉, 强制睡眠",
   usage="""我要睡觉""",
-  extra={
-    "group": "娱乐",
-  },
+  extra={"group": "娱乐", "commands": ["我要睡觉"]},
 )
 
 sleep = on_fullmatch("我要睡觉")

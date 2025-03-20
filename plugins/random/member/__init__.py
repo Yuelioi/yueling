@@ -10,9 +10,7 @@ __plugin_meta__ = PluginMetadata(
   name="随机群友",
   description="随机抽群友",
   usage="""抽群友/来点群友/抽xx群友/抽男群友/抽老婆/抽老公""",
-  extra={
-    "group": "随机",
-  },
+  extra={"group": "随机", "commands": ["抽群友"]},
 )
 
 

@@ -6,7 +6,7 @@ __plugin_meta__ = PluginMetadata(
   name="消息撤回",
   description="撤回指定的消息。",
   usage="使用方法: 撤回 [回复的消息]",
-  extra={"group": "群管"},
+  extra={"group": "群管", "commands": ["撤回"]},
 )
 
 revoke = on_command("撤回")

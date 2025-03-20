@@ -3,6 +3,9 @@ import subprocess
 
 from nonebot import logger, on_command
 from nonebot.plugin import PluginMetadata
+from nonebot.params import CommandArg
+
+from common.base.Depends import Arg
 
 __plugin_meta__ = PluginMetadata(
   name="重启服务",
@@ -17,9 +20,9 @@ reboot = on_command("重启")
 
 
 @reboot.handle()
-async def rb(name: str):
+async def rb(arg=Arg(required=True)):
   services = {"la": "la", "bot": "bot"}
-  service = services.get(name, "bot")
+  service = services.get(arg, "bot")
 
   command = f"sudo supervisorctl restart {service}"
 

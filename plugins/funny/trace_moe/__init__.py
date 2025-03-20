@@ -11,9 +11,7 @@ __plugin_meta__ = PluginMetadata(
   name="图片识别",
   description="识别图片具体场景时间, 或者查询图片角色",
   usage="""场景识别/角色识别 + 1张图片""",
-  extra={
-    "group": "娱乐",
-  },
+  extra={"group": "娱乐", "commands": ["场景识别", "角色识别"]},
 )
 
 

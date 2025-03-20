@@ -54,8 +54,6 @@ def drawing(uid: str, now_time: str, theme: str) -> Path:
 
   # 2. Random choice a luck text with title
   title, text = get_copywriting()
-  
-
 
   # 3. Draw
   font_size = 45

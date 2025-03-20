@@ -21,7 +21,7 @@ __plugin_meta__ = PluginMetadata(
   name="群文件管理",
   description="群文件管理, 部分需要管理权限",
   usage="""群文件 ~备份/~恢复/~清理/~整理 以及 本地文件清理""",
-  extra={"group": "群管"},
+  extra={"group": "群管", "commands": ["群文件备份", "群文件恢复", "群文件清理", "本地文件清理"]},
 )
 
 backup = on_fullmatch("群文件备份", permission=Permission(Superuser_validate) | Permission(User_admin_validate))

@@ -13,7 +13,7 @@ __plugin_meta__ = PluginMetadata(
   name="定时提醒",
   description="提醒做什么事情",
   usage="""提醒@用户 x小时x分钟x秒后内容""",
-  extra={"group": "定时任务"},
+  extra={"group": "定时任务", "commands": ["提醒"]},
 )
 
 

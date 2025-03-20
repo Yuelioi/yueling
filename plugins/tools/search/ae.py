@@ -37,7 +37,7 @@ async def search_ae_plugin(arg: str):
 
     result = ""
     for index, title in enumerate(titles):
-      result += f"{index+1}.{title}\n"
+      result += f"{index + 1}.{title}\n"
       result += f"网站: {source_webs[index]}\n"
       result += f"百度网盘: {baidu_links[index]}\n"
       result += "\n"

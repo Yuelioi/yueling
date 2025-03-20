@@ -1,7 +1,6 @@
 import re
 
 import aiohttp
-from nonebot_plugin_alconna import UniMessage
 
 
 # url = "https://x.com/Aoi_00008/status/1871843879949131866" # 图片文章 不支持
@@ -24,4 +23,4 @@ async def twitter(url: str):
     data = x_data.get("data")
     title = data.get("title")
     video_url = data.get("url")
-    return UniMessage.text(f"标题：{title}\n视频地址：{video_url}")
+    return f"标题：{title}\n视频地址：{video_url}"

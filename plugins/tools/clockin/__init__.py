@@ -1,13 +1,13 @@
 import re
 
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
-from nonebot_plugin_alconna import on_alconna
 
-from common.Alc.Alc import fullmatch, register_handler
 from common.database.RecordManager import Record, rcm
+from common.base.Handle import register_handler
 
-_clock_in = fullmatch("打卡")
-clock_in = on_alconna(_clock_in)
+from nonebot import on_fullmatch
+
+clock_in = on_fullmatch("打卡")
 
 
 def split_string(string):

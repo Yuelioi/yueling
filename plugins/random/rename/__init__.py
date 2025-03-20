@@ -8,9 +8,7 @@ __plugin_meta__ = PluginMetadata(
   name="随机取名",
   description="随机取群昵称",
   usage="""随机取名""",
-  extra={
-    "group": "随机",
-  },
+  extra={"group": "随机", "commands": ["随机取名"]},
 )
 
 

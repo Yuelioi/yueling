@@ -21,9 +21,7 @@ __plugin_meta__ = PluginMetadata(
   name="roll",
   description="roll 点",
   usage="""roll 整数 | 整数 整数 | x y z...""",
-  extra={
-    "group": "随机",
-  },
+  extra={"group": "随机", "commands": ["roll"]},
 )
 
 

@@ -10,10 +10,7 @@ __plugin_meta__ = PluginMetadata(
   name="recorder",
   description="特定群友欢迎图",
   usage="定时发送",
-  extra={
-    "group": "娱乐",
-    "hidden": True,
-  },
+  extra={"group": "娱乐", "hidden": True, "commands": []},
 )
 
 recorder = on_message()

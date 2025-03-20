@@ -9,7 +9,6 @@ import re
 
 import aiohttp
 from nonebot import logger
-from nonebot_plugin_alconna import UniMessage
 
 from common.utils.api import fetch_image_from_url
 from plugins.group.file.utils import fetch_file_url
@@ -113,22 +112,22 @@ def parse(data, headers=None):
   title = data["text_raw"].strip().split("\n")[0]
   page_info = data.get("page_info", {})
 
-  if page_info and page_info.get("object_type") == "video":
-    video = page_info.get("media_info", {})
-    if video:
-      media = video.get("stream_url")  # stream_url / stream_url_hd / h5_url
-      if media:
-        return UniMessage.video(url=media)
+  # if page_info and page_info.get("object_type") == "video":
+  #   video = page_info.get("media_info", {})
+  #   if video:
+  #     media = video.get("stream_url")  # stream_url / stream_url_hd / h5_url
+  #     if media:
+  #       return UniMessage.video(url=media)
 
-  elif data.get("pic_infos", {}):
-    msgs = UniMessage.text(f"标题：{title}\n")
-    pic_infos = data.get("pic_infos", {})
-    if pic_infos:
-      for pic_info in pic_infos.values():
-        img = pic_info.get("thumbnail")  # thumbnail
-        msgs += UniMessage.image(url=img["url"])
+  # elif data.get("pic_infos", {}):
+  #   msgs = UniMessage.text(f"标题：{title}\n")
+  #   pic_infos = data.get("pic_infos", {})
+  #   if pic_infos:
+  #     for pic_info in pic_infos.values():
+  #       img = pic_info.get("thumbnail")  # thumbnail
+  #       msgs += UniMessage.image(url=img["url"])
 
-    return msgs
+  #   return msgs
 
 
 # 貌似不行

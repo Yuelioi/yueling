@@ -2,12 +2,10 @@ import re
 
 import aiohttp
 from bs4 import BeautifulSoup
-from nonebot import require
+from nonebot import on_message, require
 from nonebot.adapters.onebot.v11 import MessageSegment as MS
-from nonebot_plugin_alconna import UniMsg, on_alconna
 from nonebot_plugin_waiter import waiter
 
-from common.Alc.Alc import msg
 from common.config import config
 from common.utils import text_to_image
 
@@ -16,14 +14,14 @@ from common.utils import text_to_image
 """
 
 require("nonebot_plugin_waiter")
-_zhihu = msg()
+zhihu = on_message()
 
 last_url = ""
 
-zhihu = on_alconna(_zhihu)
 # link_analysis = on_message()
 
 
+# not work
 async def zhihu_handler(url: str):
   headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -47,8 +45,8 @@ async def zhihu_handler(url: str):
         await zhihu.send("请回复验证码：")
 
         @waiter(["message"], keep_session=True)
-        async def receive(msg: UniMsg):
-          return msg
+        async def receive():
+          return
 
         async for res in receive(timeout=3):
           if not res:

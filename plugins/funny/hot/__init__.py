@@ -9,7 +9,7 @@ __plugin_meta__ = PluginMetadata(
   name="新闻热搜",
   description="获取各大平台热搜",
   usage="""查热搜""",
-  extra={"group": "娱乐"},
+  extra={"group": "娱乐", "commands": ["查热搜"]},
 )
 
 

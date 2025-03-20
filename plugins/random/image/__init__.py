@@ -17,39 +17,25 @@ __plugin_meta__ = PluginMetadata(
   name="随机图片",
   description="随机获取图片",
   usage="""随机猫猫/龙图/福瑞/我老公呢/我老婆呢/美少女/沙雕图/杂鱼""",
-  extra={
-    "group": "随机",
-  },
+  extra={"group": "随机", "commands": ["随机猫猫", "龙图", "福瑞", "我老公呢", "我老婆呢", "美少女", "沙雕图", "杂鱼"]},
 )
 
 
-cat = on_fullmatch(
-  (
-    "随机猫猫",
-    "来点猫猫",
-  )
-)
+cat = on_fullmatch(("随机猫猫", "来点猫猫"))
 
-# 龙图相关
 
 dragon = on_fullmatch(("龙图", "龙图攻击"))
 
-# 福瑞相关
 furi = on_fullmatch(("福瑞", "来点福瑞"))
 
-# 老公相关
 laogong = on_fullmatch(("我老公呢", "老公"))
 
-# 老婆相关
 laopo = on_fullmatch(("我老婆呢", "老婆"))
 
-# 美少女相关
 mei = on_fullmatch("美少女")
 
-# 沙雕图
 shadiao = on_fullmatch("沙雕图")
 
-# 杂鱼相关
 zayu = on_fullmatch("杂鱼")
 
 # 注册事件处理器

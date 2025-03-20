@@ -10,16 +10,13 @@ from nonebot.plugin import PluginMetadata
 
 from common.base.Permission import User_admin_validate
 
-require("plugins.system.plugin")
 from plugins.system.plugin.manager import hm
 
 __plugin_meta__ = PluginMetadata(
   name="复读",
   description="基于一定规则重复群友的话",
   usage="""被动技能""",
-  extra={
-    "group": "娱乐",
-  },
+  extra={"group": "娱乐", "commands": []},
 )
 
 
@@ -41,7 +38,8 @@ async def repeater_handler(
 ):
   global last_message, message_times
 
-  message, raw_message = _message_preprocess(event.get_plaintext())
+  raw_message = event.get_plaintext()
+  message = event.get_message()
 
   if not bot.adapter.get_name() == "OneBot V11":
     return
@@ -52,29 +50,19 @@ async def repeater_handler(
   gid = str(event.group_id)
   uid = str(event.user_id)
 
-  # 过滤其他插件
-  extra_commands = ["语录", "表情", "火车"]
-  for ban in extra_commands:
-    if ban in raw_message:
+  for addon in hm.Addons.values():
+    if raw_message in addon.commands:
       return
-
-  for cmd in hm.commands.values():
-    if raw_message in cmd.usage:
-      return
-
-  # 过滤链接
-  if "http" in raw_message:
-    return
 
   # 如果当前消息与记录消息不符合
-  if message != last_message.get(gid):
+  if raw_message != last_message.get(gid):
     message_times[gid] = 1
 
   else:
     message_times[gid] += 1
 
   if message_times.get(gid) == shortest_times:
-    await repeater.finish(raw_message)
+    await repeater.finish(message)
   elif message_times.get(gid, 1) > shortest_times and gid in banlist:
     ranges = [
       (1, 5, 5),
@@ -101,21 +89,4 @@ async def repeater_handler(
     username = eventV11.sender.nickname
     await repeater.finish(f"恭喜{username}获得「{award[chosen_range_index]}级」禁言卡,将在{random_num}分钟后解禁")
 
-  last_message[gid] = message
-
-
-# 消息预处理
-def _message_preprocess(message: str):
-  raw_message = message
-  images = re.findall(r"\[CQ:image.*?]", message)
-  contained_images = {
-    i: [
-      re.findall(r"url=(.*?)[,\]]", i)[0][0],
-      re.findall(r"file=(.*?)[,\]]", i)[0][0],
-    ]
-    for i in images
-  }
-  for i in contained_images:
-    message = message.replace(i, f"[{contained_images[i][1]}]")
-
-  return message, raw_message
+  last_message[gid] = raw_message

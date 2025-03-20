@@ -16,7 +16,7 @@ __plugin_meta__ = PluginMetadata(
   name="关键词屏蔽",
   description="管理群组屏蔽关键词的插件。",
   usage="使用方法: 添加屏蔽[关键词] / 删除屏蔽[关键词] / 查看屏蔽",
-  extra={"group": "群管"},
+  extra={"group": "群管", "commands": ["添加屏蔽", "删除屏蔽", "查看屏蔽", "取消屏蔽"]},
 )
 
 
@@ -25,8 +25,8 @@ keywords = on_command("添加屏蔽", aliases={"删除屏蔽", "查看屏蔽", "
 
 @event_preprocessor
 async def _(bot: Bot, event: GroupMessageEvent):
-  if group := gv.group_ban_keywords.get(event.group_id, []):
-    for key in group:
+  if group_keywords := gv.group_ban_keywords.get(event.group_id, []):
+    for key in group_keywords:
       if key in event.get_plaintext():
         await bot.delete_msg(message_id=event.message_id)
         break

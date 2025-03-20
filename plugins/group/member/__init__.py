@@ -15,7 +15,7 @@ __plugin_meta__ = PluginMetadata(
   name="群成员管理",
   description="群友备份",
   usage="""群友备份/备份群友""",
-  extra={"group": "群管"},
+  extra={"group": "群管", "commands": ["群友备份", "备份群友"]},
 )
 
 member = on_fullmatch(("群友备份", "备份群友"))

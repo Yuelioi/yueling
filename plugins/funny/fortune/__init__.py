@@ -16,7 +16,7 @@ __plugin_meta__ = PluginMetadata(
   name="今日运势",
   description="来看看今天的运势吧！",
   usage="""今日运势/抽签/运势""",
-  extra={"group": "娱乐"},
+  extra={"group": "娱乐", "commands": ["今日运势", "抽签", "运势"]},
 )
 
 

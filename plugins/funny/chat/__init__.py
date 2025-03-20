@@ -10,7 +10,10 @@ __plugin_meta__ = PluginMetadata(
   name="聊天功能",
   description="提供基础聊天功能",
   usage="""月灵 + 内容""",
-  extra={"group": "娱乐"},
+  extra={
+    "group": "娱乐",
+    "commands": ["chat"],
+  },
 )
 
 

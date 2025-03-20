@@ -3,6 +3,7 @@ from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.params import RawCommand
 from nonebot.plugin import PluginMetadata
 
+from common.base.Depends import Args
 from common.base.Handle import register_handler
 from common.database.ReplyManager import Reply, rpm
 
@@ -39,7 +40,7 @@ async def handle_reply(event: GroupMessageEvent):
 register_handler(reply, handle_reply)
 
 
-def reply_modify_handle(event: GroupMessageEvent, args: list[str], cmd=RawCommand()):
+def reply_modify_handle(event: GroupMessageEvent, args: list[str] = Args(), cmd=RawCommand()):
   if cmd == "添加回复":
     content = " ".join(args[1:])
     content = content.replace("\\n", "\n")

@@ -4,7 +4,6 @@ import nonebot
 from nonebot.adapters.onebot.v11 import Adapter as ONEBOT_V11Adapter
 
 # from nonebot.message import event_preprocessor
-# from nonebot_plugin_alconna import AlconnaMatcher
 
 nonebot.init()
 
@@ -13,7 +12,6 @@ driver.register_adapter(ONEBOT_V11Adapter)
 
 
 __import__("bootstrap")
-nonebot.load_plugin("nonebot_plugin_alconna")
 nonebot.load_plugin("nonebot_plugin_apscheduler")
 nonebot.load_from_toml("pyproject.toml")
 nonebot.load_builtin_plugins("echo")

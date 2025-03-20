@@ -10,9 +10,7 @@ __plugin_meta__ = PluginMetadata(
   name="语录",
   description="语录",
   usage="""语录 [群友名]""",
-  extra={
-    "group": "随机",
-  },
+  extra={"group": "随机", "commands": ["语录"]},
 )
 
 

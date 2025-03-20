@@ -31,9 +31,7 @@ async def trace_character_util(data: bytes, filename="test.jpg"):
   url = f"https://aiapiv2.animedb.cn/ai/api/detect?force_one=1&model={model}&ai_detect={ai_detect}"
   headers = {
     "User-Agent": (
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-      "AppleWebKit/537.36 (KHTML, like Gecko) "
-      "Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.67"
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.67"
     ),
   }
   async with aiohttp.ClientSession() as session:
