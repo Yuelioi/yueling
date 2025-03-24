@@ -13,12 +13,24 @@ from natsort import natsorted
 from nonebot import logger, on_command
 from nonebot.adapters import Bot
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
+from nonebot.plugin import PluginMetadata
 from PIL import Image
 from tenacity import RetryError, retry, stop_after_attempt, wait_fixed
 from urllib3.util import Retry
 
 from common import config
 from common.base.Depends import Args
+
+__plugin_meta__ = PluginMetadata(
+  name="JM",
+  description="JM",
+  usage="""jm id [章节号]""",
+  extra={
+    "group": "娱乐",
+    "commands": ["jm", "JM"],
+  },
+)
+
 
 # 全局配置
 BASE_URL = "https://18comic.vip/"
@@ -32,8 +44,11 @@ HEADERS = {
   "Accept-Language": "zh-CN,zh;q=0.9",
   "Referer": BASE_URL,
 }
+
 MAX_WORKERS = 5  # 并发线程数
-RETRY_STRATEGY = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["HEAD", "GET", "OPTIONS"])
+WAIT_TIME = 1  # 重试等待秒数
+RETRY_TIMES = 6  # 重试次数
+RETRY_STRATEGY = Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["HEAD", "GET", "OPTIONS"])
 
 
 jm = on_command("jm", aliases={"JM", "Jm"})
@@ -44,6 +59,9 @@ save_dir = config.config.resource.images / "jm"
 @jm.handle()
 async def handle(bot: Bot, event: GroupMessageEvent, args: list[str] = Args(1, 2)):
   """主程序"""
+  if not str(event.group_id).startswith("827264"):
+    return
+
   session = create_session()
   book_id = args[0]
   charpter_id = 1
@@ -126,7 +144,7 @@ def create_session() -> requests.Session:
   return scraper
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
+@retry(stop=stop_after_attempt(RETRY_TIMES), wait=wait_fixed(WAIT_TIME))
 def fetch_with_retry(session: requests.Session, url: str) -> requests.Response:
   """带重试机制的请求函数"""
   try:
@@ -232,7 +250,7 @@ def get_img_urls(session: requests.Session, chapter_url: str) -> list[str]:
   return [str(img.get("data-original")) for img in img_tags]
 
 
-@retry(stop=stop_after_attempt(5), wait=wait_fixed(3))
+@retry(stop=stop_after_attempt(RETRY_TIMES), wait=wait_fixed(WAIT_TIME))
 def download_image(session: requests.Session, img_url: str, save_path: str) -> bool:
   """下载并保存单张图片"""
   try:
