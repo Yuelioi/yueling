@@ -1,14 +1,12 @@
-from common.base.Handle import register_handler
-from common.config import config
-from common.utils.content_convert import text_to_image
-from plugins.system.plugin.manager import hm
 from nonebot import on_command
-
 from nonebot.adapters.onebot.v11 import MessageSegment
 from nonebot.plugin import PluginMetadata
 
 from common.base.Depends import Arg
-
+from common.base.Handle import register_handler
+from common.config import config
+from common.utils.content_convert import text_to_image
+from plugins.system.plugin.manager import hm
 
 __plugin_meta__ = PluginMetadata(
   name="系统帮助",
@@ -21,7 +19,7 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
-help = on_command("帮助")
+help = on_command("帮助", aliases={"help"})
 
 
 async def hp(commond: str = Arg()):

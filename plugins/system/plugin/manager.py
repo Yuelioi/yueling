@@ -1,10 +1,8 @@
-from dataclasses import MISSING, fields
 from functools import cached_property
 from typing import Callable  # noqa
 
-from nonebot_plugin_alconna import CommandMeta
-from pydantic import BaseModel
 from nonebot.plugin import get_loaded_plugins
+from pydantic import BaseModel
 
 
 class Addon(BaseModel):
@@ -40,11 +38,15 @@ class HelpManager(BaseModel):
         continue
 
       extra = meta.extra
-      name = plugin.name
-      group = extra.get("group", "未命名")
+      name = meta.name
+      group = extra.get("group", "三方插件")
       usage = meta.usage or "未设置用法"
       hidden = extra.get("hidden", False)
       self.groups.add(group)
+
+      if group == "三方插件":
+        if not name.startswith("nonebot"):
+          continue
       _addons.setdefault(
         name,
         Addon(id=i + 1, name=name, description=meta.description, usage=usage, group=group, hidden=hidden, commands=extra.get("commands", [])),
@@ -101,31 +103,6 @@ class HelpManager(BaseModel):
       help_messages.append(f"---{group}---")
       help_messages.extend(Addons)
     return help_messages
-
-
-def is_default_Addon_meta(instance: CommandMeta) -> bool:
-  """
-  判断一个命令元信息是否是默认的命令元信息
-  """
-  for field in fields(instance):
-    instance_value = getattr(instance, field.name)
-
-    if field.name == "extra":
-      continue
-
-    if field.default is not MISSING and field.default != instance_value:
-      return False
-
-    if field.default_factory is not MISSING:
-      if field.default_factory is dict:
-        default_value = {}
-      else:
-        default_value = field.default_factory()
-
-      if default_value != instance_value:
-        return False
-
-  return True
 
 
 hm = HelpManager()

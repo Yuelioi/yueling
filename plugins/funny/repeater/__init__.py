@@ -9,7 +9,6 @@ from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.plugin import PluginMetadata
 
 from common.base.Permission import User_admin_validate
-
 from plugins.system.plugin.manager import hm
 
 __plugin_meta__ = PluginMetadata(
@@ -55,7 +54,7 @@ async def repeater_handler(
       return
 
   # 如果当前消息与记录消息不符合
-  if raw_message != last_message.get(gid):
+  if message != last_message.get(gid):
     message_times[gid] = 1
 
   else:
@@ -89,4 +88,4 @@ async def repeater_handler(
     username = eventV11.sender.nickname
     await repeater.finish(f"恭喜{username}获得「{award[chosen_range_index]}级」禁言卡,将在{random_num}分钟后解禁")
 
-  last_message[gid] = raw_message
+  last_message[gid] = message

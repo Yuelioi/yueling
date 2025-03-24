@@ -1,22 +1,18 @@
 import json
 
 import aiofiles
-from nonebot.adapters import Bot
-from nonebot.exception import IgnoredException
-from nonebot.message import run_preprocessor
 from nonebot import on_command
-from nonebot.params import RawCommand
-
+from nonebot.adapters import Bot
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
+from nonebot.exception import IgnoredException
 from nonebot.matcher import Matcher
-
-
-from plugins.system.plugin.manager import hm
-
+from nonebot.message import run_preprocessor
+from nonebot.params import RawCommand
+from nonebot.plugin import PluginMetadata
 
 from common.base.Depends import Args
 from common.config import config, gv
-from nonebot.plugin import PluginMetadata
+from plugins.system.plugin.manager import hm
 
 __plugin_meta__ = PluginMetadata(
   name="插件管理",

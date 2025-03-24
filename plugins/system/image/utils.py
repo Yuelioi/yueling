@@ -35,7 +35,6 @@ def name_gene(cmd: str = "", filename: str = "", group="", uploader=""):
     "添加龙图",
     "添加杂鱼",
     "添加沙雕图",
-    "添加沙雕",
     "添加美少女",
     "添加福瑞",
   ]:
@@ -98,7 +97,7 @@ async def add_images(cmd: str, group_id, user_id, arg: str, imgs: list[str] = []
         logger.info(f"上传图片:{trg_path}")
     except Exception as e:
       logger.info(f"上传图片失败:{trg_path}", e)
-      msgs += f"图片{index + 1}上传失败\n"
+      msgs += f"图片{index + 1}上传失败{e}\n"
   return msgs
 
 

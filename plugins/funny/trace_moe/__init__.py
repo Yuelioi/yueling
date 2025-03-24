@@ -4,6 +4,7 @@ from nonebot.params import RawCommand
 from nonebot.plugin import PluginMetadata
 
 from common.base.Depends import Img
+from common.base.Handle import register_handler
 from common.utils import api, text_to_image
 from plugins.funny.trace_moe.utils import trace_moe_util
 
@@ -18,12 +19,11 @@ __plugin_meta__ = PluginMetadata(
 trace = on_command("场景识别", aliases={"角色识别"})
 
 
-@trace.handle()
 async def image_trace(
   cmd=RawCommand(),
   img=Img(required=True),
 ):
-  img_data = await api.fetch_image_from_url(img)
+  img_data = await api.fetch_image_from_url_ssl(img)
 
   if cmd == "场景识别":
     res = await trace_moe_util(data=img_data.getvalue())
@@ -56,7 +56,10 @@ async def image_trace(
       )
 
     out_img = text_to_image(output)
-    await trace.finish(MessageSegment.image(file=out_img))
+    return MessageSegment.image(file=out_img)
   else:
-    await trace.finish("接口维护中")
+    return "接口维护中"
     # res = await trace_character_util(data=img_data.getvalue())
+
+
+register_handler(trace, image_trace)
