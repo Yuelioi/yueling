@@ -1,17 +1,11 @@
+from nonebot import on_command, on_fullmatch
 from nonebot.adapters import Event
-from nonebot_plugin_alconna import (
-  Alconna,
-  Args,
-  Arparma,
-  Image,
-  MsgTarget,
-  MultiVar,
-  on_alconna,
-)
-from nonebot_plugin_alconna.builtins.extensions.reply import ReplyMergeExtension
+from nonebot.adapters.onebot.v11 import GroupMessageEvent
+from nonebot.params import RawCommand
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import pm, ptc, register_handler
-from common.Alc.utils import get_source_command
+from common.base.Depends import Arg, Img, Imgs
+from common.base.Handle import register_handler
 from plugins.system.image.utils import (
   add_images,
   delete_image,
@@ -19,16 +13,35 @@ from plugins.system.image.utils import (
   update_image_database,
 )
 
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="图片管理",
   description="图片管理",
   usage="""添加xx图片 [图片] / 删除图片 [图片]""",
-  group="系统",
+  extra={
+    "group": "系统",
+    "commands": [
+      "添加老婆",
+      "添加老公",
+      "添加福瑞",
+      "添加龙图",
+      "添加存档",
+      "添加杂鱼",
+      "添加表情",
+      "添加美少女",
+      "添加沙雕图",
+      "添加语录",
+      "添加吃的",
+      "添加喝的",
+      "添加玩的",
+      "添加水果",
+      "添加零食",
+      "添加拍一拍",
+    ],
+  },
 )
 
-_manage = Alconna("添加老婆", Args["name?", str]["imgs", MultiVar(Image)], meta=ptc(__plugin_meta__))
-manager = on_alconna(
-  _manage,
+manager = on_command(
+  "添加老婆",
   aliases={
     "添加老公",
     "添加福瑞",
@@ -45,35 +58,22 @@ manager = on_alconna(
     "添加水果",
     "添加零食",
     "添加拍一拍",
+    "删除图片",
+    "更新图片",
+    "图片统计",
   },
-  extensions=[ReplyMergeExtension],
 )
 
-_delete = Alconna("删除图片", Args["img", Image])
-delete_command = on_alconna(
-  _delete,
-  extensions=[ReplyMergeExtension],
-)
-
-_summary = Alconna("图片统计")
-summary = on_alconna(_summary)
-
-_update = Alconna("更新图片")
-update = on_alconna(_update)
+delete = on_command("删除图片")
+summary = on_fullmatch("图片统计")
+update = on_fullmatch("更新图片")
 
 
-async def manage_image(result: Arparma, event: Event, target: MsgTarget, name: str = "", imgs: list[Image] = []):
-  if target.private:
-    return
-  cmd = get_source_command(result)
-
-  if not cmd:
-    return
-
-  return await add_images(cmd=cmd, group_id=target.id, user_id=event.get_user_id(), imgs=imgs, arg=name)
+async def manage_image(event: GroupMessageEvent, cmd=RawCommand(), imgs: list[str] = Imgs(), arg: str = Arg()):
+  return await add_images(cmd=cmd, group_id=event.group_id, user_id=event.user_id, imgs=imgs, arg=arg)
 
 
-async def delete_image_handler(event: Event, img: Image):
+async def delete_image_handler(event: Event, img: str = Img(required=True)):
   return await delete_image(user_id=int(event.get_user_id()), img=img)
 
 
@@ -86,6 +86,6 @@ async def update_handler():
 
 
 register_handler(manager, manage_image)
-register_handler(delete_command, delete_image_handler)
+register_handler(delete, delete_image_handler)
 register_handler(summary, summary_handler)
 register_handler(update, update_handler)

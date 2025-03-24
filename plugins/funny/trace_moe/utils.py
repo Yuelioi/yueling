@@ -2,12 +2,14 @@ import json
 
 import aiohttp
 
+PROXIE = "http://127.0.0.1:10808"
+
 
 async def trace_moe_util(data: bytes):
   url = "https://api.trace.moe/search?anilistInfo"
   headers = {"Content-Type": "image/jpeg"}
 
-  async with aiohttp.ClientSession() as session:
+  async with aiohttp.ClientSession(proxy=PROXIE) as session:
     async with session.post(url, data=data, headers=headers) as response:
       # 获取并解析响应
       if response.status == 200:
@@ -30,11 +32,7 @@ async def trace_character_util(data: bytes, filename="test.jpg"):
   ai_detect = 0
   url = f"https://aiapiv2.animedb.cn/ai/api/detect?force_one=1&model={model}&ai_detect={ai_detect}"
   headers = {
-    "User-Agent": (
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-      "AppleWebKit/537.36 (KHTML, like Gecko) "
-      "Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.67"
-    ),
+    "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.67"),
   }
   async with aiohttp.ClientSession() as session:
     async with session.post(url=url, headers=headers, data=data2) as res:

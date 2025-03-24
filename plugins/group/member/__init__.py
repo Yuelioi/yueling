@@ -1,26 +1,24 @@
 import json
 
 import aiofiles
+from nonebot import on_fullmatch
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
-from nonebot_plugin_alconna import on_alconna
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import fullmatch, pm, ptc
 from common.config import config
 from plugins.group.member.models import MemberInfo
 
 WorkingMessage = "正在处理中/未知错误"
 
 
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="群成员管理",
   description="群友备份",
   usage="""群友备份/备份群友""",
-  group="群管",
+  extra={"group": "群管", "commands": ["群友备份", "备份群友"]},
 )
 
-_member = fullmatch("群友备份")
-_member.meta = ptc(__plugin_meta__)
-member = on_alconna(_member, aliases={"备份群友"})
+member = on_fullmatch(("群友备份", "备份群友"))
 
 
 async def write(file, data: dict):

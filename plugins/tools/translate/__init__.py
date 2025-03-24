@@ -1,22 +1,24 @@
-from nonebot_plugin_alconna import Arparma, on_alconna
-
-from common.Alc.Alc import args, pm, ptc, register_handler
 from common.utils import tran_deepl_pro
+from nonebot import on_command
+from nonebot.params import RawCommand
+from common.base.Depends import Args
 
-__plugin_meta__ = pm(
+
+from nonebot.plugin import PluginMetadata
+
+__plugin_meta__ = PluginMetadata(
   name="翻译",
   description="翻译、中英互译、日英互译、日中互译、英日互译",
   usage="""翻译/中译英/中译日/英译中/英译日/日译英/日译中 + 需要翻译的内容""",
-  group="工具",
+  extra={"group": "工具", "commands": ["翻译", "中译英", "中译日", "英译中", "英译日", "日译英", "日译中"]},
 )
 
-_translator = args("翻译", meta=ptc(__plugin_meta__))
-translator = on_alconna(_translator, aliases={"中译英", "中译日", "英译中", "英译日", "日译英", "日译中"})
+translator = on_command("翻译", aliases={"中译英", "中译日", "英译中", "英译日", "日译英", "日译中"})
 
 
 # 翻译 / 中译英 / 中译日 / 日译英 / 英译日 / 日译英
-async def translate(result: Arparma, args: list[str] = []):
-  cmd = str(result.header_match.origin)
+@translator.handle()
+async def translate(cmd=RawCommand(), args: list[str] = Args()):
   if not args:
     return "请输入需要翻译的内容"
   if cmd.endswith("译英"):
@@ -26,7 +28,4 @@ async def translate(result: Arparma, args: list[str] = []):
   else:
     target_lang = "zh"
   res = tran_deepl_pro(" ".join(args), target_lang=target_lang)
-  return res
-
-
-register_handler(translator, translate)
+  await translator.finish(res)

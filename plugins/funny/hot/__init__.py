@@ -1,19 +1,19 @@
-from nonebot_plugin_alconna import UniMessage, on_alconna
+from nonebot import on_fullmatch
+from nonebot.adapters.onebot.v11 import MessageSegment
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import fullmatch, pm, ptc
 from common.utils import text_to_image
 from plugins.funny.hot.utils import baidu, bilibili, weibo, zhihu
 
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="新闻热搜",
   description="获取各大平台热搜",
   usage="""查热搜""",
-  group="娱乐",
+  extra={"group": "娱乐", "commands": ["查热搜"]},
 )
 
-_hot = fullmatch("查热搜")
-_hot.meta = ptc(__plugin_meta__)
-hot = on_alconna(_hot)
+
+hot = on_fullmatch("查热搜")
 
 
 @hot.handle()
@@ -36,4 +36,4 @@ async def get_hots():
     ]
 
   img = text_to_image(await hots())
-  await hot.finish(UniMessage.image(raw=img))
+  await hot.finish(MessageSegment.image(file=img))

@@ -1,12 +1,11 @@
-from dataclasses import MISSING, fields
 from functools import cached_property
 from typing import Callable  # noqa
 
-from nonebot_plugin_alconna import CommandMeta, command_manager
+from nonebot.plugin import get_loaded_plugins
 from pydantic import BaseModel
 
 
-class Command(BaseModel):
+class Addon(BaseModel):
   id: int
   name: str
   description: str
@@ -14,6 +13,7 @@ class Command(BaseModel):
   group: str
   hidden: bool = False
   help_msg: Callable | None = None
+  commands: list[str]
 
   def help(self):
     return f"""分组: {self.group}
@@ -26,39 +26,37 @@ class Command(BaseModel):
 class HelpManager(BaseModel):
   groups: set[str] = set()
 
+  # 所有指令
   @cached_property
-  def commands(self):
-    try:
-      cmds = command_manager.get_commands()
-    except Exception:
-      return {}
-    _commands: dict[str, Command] = {}
-    for i, cmd in enumerate(cmds):
-      if is_default_command_meta(cmd.meta):
+  def Addons(self):
+    plugins = get_loaded_plugins()
+
+    _addons: dict[str, Addon] = {}
+    for i, plugin in enumerate(plugins):
+      meta = plugin.metadata
+      if not meta:
         continue
-      extra = cmd.meta.extra
-      name = extra.get("name", "未命名")
-      group = extra.get("group", "未命名")
-      usage = cmd.meta.usage or "未设置用法"
+
+      extra = meta.extra
+      name = meta.name
+      group = extra.get("group", "三方插件")
+      usage = meta.usage or "未设置用法"
       hidden = extra.get("hidden", False)
       self.groups.add(group)
-      _commands.setdefault(
+
+      if group == "三方插件":
+        if not name.startswith("nonebot"):
+          continue
+      _addons.setdefault(
         name,
-        Command(
-          id=i + 1,
-          name=name,
-          description=cmd.meta.description,
-          usage=usage,
-          group=group,
-          hidden=hidden,
-        ),
+        Addon(id=i + 1, name=name, description=meta.description, usage=usage, group=group, hidden=hidden, commands=extra.get("commands", [])),
       )
-    return _commands
+    return _addons
 
   def search(self, name: str):
     try:
-      if cmd := self.get_cmd(name):
-        return cmd.help()
+      if addon := self.get_addon(name):
+        return addon.help()
 
       if name in self.groups:
         if doc := self.by_group(name):
@@ -68,21 +66,21 @@ class HelpManager(BaseModel):
     except Exception as e:
       return f"搜索命令时发生错误{e}"
 
-  def get_cmd(self, name: str):
+  def get_addon(self, name: str):
     if name.isdigit():
-      return self.get_cmd_by_id(int(name))
-    return self.get_cmd_by_name(name)
+      return self.get_addon_by_id(int(name))
+    return self.get_addon_by_name(name)
 
-  def get_cmd_by_name(self, name: str):
-    return self.commands.get(name)
+  def get_addon_by_name(self, name: str):
+    return self.Addons.get(name)
 
-  def get_cmd_by_id(self, i: int):
-    for cmd in self.commands.values():
-      if cmd.id == i:
-        return cmd
+  def get_addon_by_id(self, i: int):
+    for addon in self.Addons.values():
+      if addon.id == i:
+        return addon
 
   def by_group(self, name: str):
-    res = [f"ID:{cmd.id} 名称:{cmd.name}" for cmd in self.commands.values() if cmd.group == name]
+    res = [f"ID:{addon.id} 名称:{addon.name}" for addon in self.Addons.values() if addon.group == name]
     if not res:
       return
     return f"---{name}---\nhelp + ID/名称 查看具体用法\n" + "\n".join(res)
@@ -91,45 +89,20 @@ class HelpManager(BaseModel):
     """
     所有命令的帮助信息 不包括隐藏命令
     """
-    grouped_commands = {}
+    grouped_Addons = {}
 
-    for cmd in self.commands.values():
-      if cmd.hidden:
+    for addon in self.Addons.values():
+      if addon.hidden:
         continue
-      if cmd.group not in grouped_commands:
-        grouped_commands[cmd.group] = []
-      grouped_commands[cmd.group].append(f"ID:{cmd.id} 名称:{cmd.name}")
+      if addon.group not in grouped_Addons:
+        grouped_Addons[addon.group] = []
+      grouped_Addons[addon.group].append(f"ID:{addon.id} 名称:{addon.name}")
 
     help_messages = ["使用help + ID/名称查看详细帮助"]
-    for group, commands in grouped_commands.items():
+    for group, Addons in grouped_Addons.items():
       help_messages.append(f"---{group}---")
-      help_messages.extend(commands)
+      help_messages.extend(Addons)
     return help_messages
-
-
-def is_default_command_meta(instance: CommandMeta) -> bool:
-  """
-  判断一个命令元信息是否是默认的命令元信息
-  """
-  for field in fields(instance):
-    instance_value = getattr(instance, field.name)
-
-    if field.name == "extra":
-      continue
-
-    if field.default is not MISSING and field.default != instance_value:
-      return False
-
-    if field.default_factory is not MISSING:
-      if field.default_factory is dict:
-        default_value = {}
-      else:
-        default_value = field.default_factory()
-
-      if default_value != instance_value:
-        return False
-
-  return True
 
 
 hm = HelpManager()

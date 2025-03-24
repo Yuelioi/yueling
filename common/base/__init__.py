@@ -15,7 +15,7 @@
 
 """
 
-from common.base.Depends import Arg, Args, At, Ats, Number, Numbers, UserImg, UserImgs
+from common.base.Depends import Arg, Args, At, Ats, Img, Imgs
 from common.base.Plugin import load_mods
 
-__all__ = ["Arg", "Args", "At", "Ats", "Number", "Numbers", "UserImg", "UserImgs", "load_mods"]
+__all__ = ["Arg", "Args", "At", "Ats", "Img", "Imgs", "load_mods"]

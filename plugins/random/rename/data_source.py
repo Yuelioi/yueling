@@ -2,11 +2,12 @@ import random
 
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 
+from common.base.Depends import Arg
 from common.base.Permission import Bot_admin_validate
 from common.config.message import BotIsNotAdmin
 
 
-async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = ""):
+async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = Arg()):
   is_admin = await Bot_admin_validate(bot, event)
   if not is_admin:
     return BotIsNotAdmin
@@ -19,7 +20,6 @@ async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = ""):
     "腐烂",
     "东京",
     "三维",
-    "四次元",
     "流星",
     "闪光",
     "南极",
@@ -62,9 +62,7 @@ async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = ""):
     "法外",
     "追杀",
     "通缉",
-    "女子",
     "微型",
-    "男子",
     "超",
     "毁灭",
     "大型",
@@ -77,6 +75,8 @@ async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = ""):
     "魔法",
     "极限",
     "无聊",
+    "蓬松",
+    "慵懒",
   ]
   el2 = [
     "小丑",
@@ -88,7 +88,6 @@ async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = ""):
     "十字架",
     "咩咩",
     "赛博",
-    "野猪",
     "外星",
     "窒息",
     "变态",
@@ -106,8 +105,6 @@ async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = ""):
     "虚构",
     "乱码",
     "碳水",
-    "内脏",
-    "脑浆",
     "血管",
     "绷带",
     "不合格",
@@ -125,7 +122,6 @@ async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = ""):
     "进化",
     "潮湿",
     "砂糖",
-    "高潮",
     "变异",
     "复合盐",
     "伏特加",
@@ -157,12 +153,12 @@ async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = ""):
     "女孩",
     "男孩",
     "宝贝",
-    "小妈咪",
     "虫",
     "菇",
     "公主",
     "少女",
     "少年",
+    "宝宝",
     "1号机",
     "子",
     "恐龙",
@@ -189,7 +185,6 @@ async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = ""):
     "小猫咪",
     "样本",
     "颗粒",
-    "血块",
     "汽水",
     "蛙",
     "软体",
@@ -206,7 +201,6 @@ async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = ""):
     "废人",
     "毛血旺",
     "怪人",
-    "肉",
     "河豚",
     "豚",
     "藻类",
@@ -224,6 +218,9 @@ async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = ""):
     "烟花",
     "雪花",
     "彩虹",
+    "饭团",
+    "布丁",
+    "病人",
   ]
 
   new_name = random.choice(el1) + random.choice(el2) + random.choice(el3)

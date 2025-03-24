@@ -1,53 +1,42 @@
 import json
 
 import aiofiles
+from nonebot import on_command
 from nonebot.adapters import Bot
+from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.exception import IgnoredException
+from nonebot.matcher import Matcher
 from nonebot.message import run_preprocessor
-from nonebot_plugin_alconna import AlconnaMatcher, Arparma, MsgTarget, on_alconna
+from nonebot.params import RawCommand
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import args, pm, ptc
-from common.Alc.Permission import User_Checker
+from common.base.Depends import Args
 from common.config import config, gv
 from plugins.system.plugin.manager import hm
 
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="插件管理",
   description="禁用 / 启用 插件",
   usage="""禁用/启用插件 [插件编号|插件名称]""",
-  group="系统",
+  extra={"group": "系统", "comands": ["禁用插件", "启用插件", "查看禁用"]},
 )
-_manage = args("禁用插件", required=False, meta=ptc(__plugin_meta__))
-manage = on_alconna(_manage, aliases={"启用插件", "查看禁用"})
+manage = on_command("禁用插件", aliases={"启用插件", "查看禁用"})
 
 
 @run_preprocessor
-async def do_something(target: MsgTarget, matcher: AlconnaMatcher):
-  if target.private:
-    return
+async def do_something(matcher: Matcher, event: GroupMessageEvent):
+  plugin = matcher.plugin_name
 
-  cmd = matcher.command()
-
-  if ban := gv.group_black_list.get(target.id, []):
-    if cmd.meta.extra.get("name") in ban:
+  if ban := gv.group_black_list.get(event.group_id, []):
+    if plugin in ban:
       raise IgnoredException("")
 
 
-@manage.assign("$main", additional=User_Checker)
-async def mana(target: MsgTarget, result: Arparma, args: list[str] = []):
-  if target.private:
-    return
-
-  if "查看禁用" in result.header_match.origin:
-    cmd = "查看禁用"
-  elif "禁用" in result.header_match.origin:
-    cmd = "禁用插件"
-  else:
-    cmd = "启用插件"
-
+@manage.handle()
+async def mana(event: GroupMessageEvent, cmd=RawCommand(), args: list[str] = Args()):
   # 查看禁用
   if cmd == "查看禁用":
-    if ban := gv.group_black_list.get(target.id, []):
+    if ban := gv.group_black_list.get(event.group_id, []):
       msg = "已禁用的插件为" + " ".join(map(str, ban))
     else:
       msg = "当前没有禁用任何插件"
@@ -55,33 +44,34 @@ async def mana(target: MsgTarget, result: Arparma, args: list[str] = []):
 
   if not args:
     await manage.finish("请输入插件名称或编号")
+
   # 获取有效插件列表
-  plugins: list[str] = []
+  addons: list[str] = []
   for arg in args:
-    plugin = hm.get_cmd(arg)
-    if not plugin:
+    addon = hm.get_addon(arg)
+    if not addon:
       continue
-    plugins.append(plugin.name)
-  if not plugins:
+    addons.append(addon.name)
+  if not addons:
     await manage.finish("未找到相关插件")
 
   msg = "已启用:" if cmd == "启用插件" else "已禁用:"
   # 修改禁用列表
-  ban = gv.group_black_list.get(target.id, [])
+  ban = gv.group_black_list.get(event.group_id, [])
 
-  for plugin in plugins:
-    if plugin in ban:
+  for addon in addons:
+    if addon in ban:
       if cmd == "启用插件":
-        ban.remove(plugin)
+        ban.remove(addon)
       else:
         continue
     else:
       if cmd != "启用插件":
-        ban.append(plugin)
+        ban.append(addon)
 
-    msg += plugin + " "
+    msg += addon + " "
 
-  gv.group_black_list[target.id] = ban
+  gv.group_black_list[event.group_id] = ban
 
   async with aiofiles.open(config.data.group_black_list, "w") as f:
     await f.write(json.dumps(gv.group_black_list, ensure_ascii=False, indent=4))

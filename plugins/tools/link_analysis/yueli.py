@@ -22,4 +22,4 @@ async def yuelili(url):
         if "name" in meta.attrs:
           if meta.attrs["name"] == "description":
             description = meta.attrs["content"]
-      return MS.image(image) + MS.text(f"标题: { title }\n简介: { description}\n链接: { url }")
+      return MS.image(image) + MS.text(f"标题: {title}\n简介: {description}\n链接: {url}")

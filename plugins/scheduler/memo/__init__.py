@@ -1,47 +1,58 @@
 import re
 from datetime import datetime, timedelta
 
-from nonebot import get_bot
+from apscheduler.job import Job
+from nonebot import get_bot, on_keyword
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
-from nonebot_plugin_alconna import Alconna, Args, At, on_alconna
+from nonebot.plugin import PluginMetadata
 from nonebot_plugin_apscheduler import scheduler
 
-from common.Alc.Alc import pm, ptc
+from common.base.Depends import At
 
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="定时提醒",
   description="提醒做什么事情",
   usage="""提醒@用户 x小时x分钟x秒后内容""",
-  group="定时任务",
+  extra={"group": "定时任务", "commands": ["提醒"]},
 )
 
-_memo = Alconna("提醒", Args["user", At]["content", str])
 
-_memo.meta = ptc(__plugin_meta__)
-memo = on_alconna(_memo)
+memo = on_keyword(keywords={"提醒"})
 
 
+# TODO 查看提醒
 @memo.handle()
-async def setu_h(event: GroupMessageEvent, user: At, content: str):
+async def setu_h(event: GroupMessageEvent, user=At(False)):
   origin = event.get_plaintext()
-  if "提醒" not in origin:
+
+  if "查看提醒" in origin:
     return
 
-  task_delay, task_content = extract_time_and_content(event.get_plaintext())
+  task_delay, task_content = extract_time_and_content(origin)
 
-  task_content = task_content.replace("我", "")
+  task_content = task_content.replace("我", "").replace("提醒", "").strip()
 
-  if len(task_content) == 0:
+  # 跳过解析失败的
+  if not task_content:
     return
+
+  if task_delay < 5:
+    return
+
   task_content = "该" + task_content + "啦"
-  userId = user.target
-  if userId == 435826135:
+
+  if "提醒我" in origin:
+    user = event.user_id
+
+  if user == 435826135:
     task_content = "爹地, " + task_content + "~"
 
-  taskId = f"qq-{event.group_id}-{userId}-{datetime.now().timestamp()}"
-  msg = MessageSegment.at(user.target) + MessageSegment.text(task_content)
+  taskId = f"qq-{event.group_id}-{user}-{datetime.now().timestamp()}"
+  msg = MessageSegment.at(user) + MessageSegment.text(task_content)
 
-  job = scheduler.add_job(
+  print(task_content)
+
+  scheduler.add_job(
     func=reminder,
     name=taskId,
     id=taskId,
@@ -49,12 +60,14 @@ async def setu_h(event: GroupMessageEvent, user: At, content: str):
     next_run_time=datetime.now() + timedelta(seconds=task_delay),
     args=[
       event.group_id,
-      event.user_id,
+      user,
       msg,
     ],
   )
-  print(job.id)
-  scheduler.remove_job(job.id)
+
+  jobs: list[Job] = scheduler.get_jobs()
+
+  print(jobs[0].next_run_time)
 
 
 async def reminder(
@@ -72,6 +85,8 @@ def extract_time_and_content(
   # 匹配时间和内容的正则表达式，支持可选的小时、分钟和秒
   pattern = re.compile(r"((?:(\d+)(小时|h))?(?:(\d+)(分钟|m))?(?:(\d+)(秒|s))?)后(.+?)(?=\d+|$)")
   matches = pattern.findall(text)
+  total_seconds = 0
+  content = ""
   for match in matches:
     hours = int(match[1]) if match[1] else 0
     minutes = int(match[3]) if match[3] else 0

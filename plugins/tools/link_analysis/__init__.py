@@ -2,9 +2,11 @@ import re
 
 from nonebot import logger
 from nonebot.adapters import Event
-from nonebot_plugin_alconna import on_alconna
 
-from common.Alc.Alc import msg, pm, ptc
+
+from nonebot import on_message
+from nonebot.plugin import PluginMetadata
+
 from plugins.tools.link_analysis.bilibili import bilibili
 from plugins.tools.link_analysis.csdn import csdn
 from plugins.tools.link_analysis.twitter import twitter
@@ -12,22 +14,23 @@ from plugins.tools.link_analysis.weibo import weibo
 from plugins.tools.link_analysis.ytb import youtube
 from plugins.tools.link_analysis.zhihu import zhihuzhuanlan
 
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="链接解析",
   description="",
   usage="被动技能",
-  group="工具",
+  extra={
+    "group": "工具",
+  },
 )
 
 
 last_url = ""
-_link = msg()
-_link.meta = ptc(__plugin_meta__)
-link_analysis = on_alconna(_link)
+
+link_analysis = on_message()
 
 
 @link_analysis.handle()
-async def link_handler(event: Event, args: list[str] = []):
+async def link_handler(event: Event):
   global last_url
   url = event.get_plaintext()
 

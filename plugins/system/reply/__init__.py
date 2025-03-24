@@ -1,7 +1,10 @@
-from nonebot import get_driver, logger
-from nonebot_plugin_alconna import Arparma, MsgTarget, on_alconna
+from nonebot import get_driver, logger, on_command, on_message
+from nonebot.adapters.onebot.v11 import GroupMessageEvent
+from nonebot.params import RawCommand
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import args, msg, pm, ptc, register_handler
+from common.base.Depends import Args
+from common.base.Handle import register_handler
 from common.database.ReplyManager import Reply, rpm
 
 reply_data = {}
@@ -14,23 +17,22 @@ async def _():
   update_reply()
 
 
-__plugin_meta__ = pm(
+__plugin_meta__ = PluginMetadata(
   name="应答系统",
   description="基于关键词回复设定内容",
   usage="""添加回复/删除回复/更新回复""",
-  group="系统",
+  extra={
+    "group": "系统",
+  },
 )
-_reply = msg()
 
-_reply.meta = ptc(__plugin_meta__)
-reply = on_alconna(_reply)
+reply = on_message()
 
-_reply_modify = args("添加回复")
-reply_modify = on_alconna(_reply_modify, aliases={"删除回复", "更新回复"})
+reply_modify = on_command("添加回复", aliases={"删除回复", "更新回复"})
 
 
-async def handle_reply(result: Arparma):
-  msg = str(result.origin).lower()
+async def handle_reply(event: GroupMessageEvent):
+  msg = str(event.get_plaintext()).lower()
   if res := reply_data.get(msg):
     return res.replace("回复7:", "")
 
@@ -38,14 +40,16 @@ async def handle_reply(result: Arparma):
 register_handler(reply, handle_reply)
 
 
-def reply_modify_handle(result: Arparma, target: MsgTarget, args: list[str]):
-  if "添加回复" in result.header_match.origin:
-    rep = Reply(qq=int(target.id), keyword=args[0], reply=" ".join(args[1:]), group=None)
+def reply_modify_handle(event: GroupMessageEvent, args: list[str] = Args(), cmd=RawCommand()):
+  if cmd == "添加回复":
+    content = " ".join(args[1:])
+    content = content.replace("\\n", "\n")
+    rep = Reply(qq=event.user_id, keyword=args[0], reply=content, group=None)
     if rpm.insert_data(rep):
       update_reply()
       return "添加成功"
     return "添加失败了喵~"
-  elif "删除回复" in result.header_match.origin:
+  elif "删除回复" == cmd:
     if rpm.delete_reply_data(int(args[0])):
       update_reply()
       return "删除成功"

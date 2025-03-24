@@ -1,23 +1,27 @@
 import ast
 
-from nonebot_plugin_alconna import on_alconna
+from nonebot import on_command
+from nonebot.plugin import PluginMetadata
 
-from common.Alc.Alc import args, pm, ptc, register_handler
+from common.base.Depends import Args
+from common.base.Handle import register_handler
 
-__plugin_meta__ = pm(
+
+__plugin_meta__ = PluginMetadata(
   name="计算器",
   description="加减乘除/比较/位运算/幂模/大于小于",
   usage="""计算 + 需要计算的内容
 如计算 12*21
   """,
-  group="工具",
+  extra={
+    "group": "工具",
+  },
 )
 
-_calculator = args("计算", required=False, meta=ptc(__plugin_meta__))
-calculator = on_alconna(_calculator)
+calculator = on_command("计算")
 
 
-async def _calc(args: list[str] = []):
+async def _calc(args: list[str] = Args()):
   exp = "".join(args).strip()
   allow = [
     ast.Module,  # 根节点

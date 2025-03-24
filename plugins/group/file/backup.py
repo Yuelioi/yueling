@@ -51,7 +51,12 @@ class BackupEventInfo:
     if not self.backup_directory.exists():
       self.backup_directory.mkdir(parents=True)
 
+  # 结束任务
   def finish(self):
+    self.duration = round(time.time() - self.start_time, 2)
+
+  # 下一个任务
+  def next(self):
     self.is_processing = False
 
 
@@ -97,11 +102,10 @@ class BackupManager:
   # 备份群文件
   async def backup(self, bot: Bot, toDownloadFiles: list[QQFile]):
     await asyncio.gather(*(self.save_file(bot, file_info) for file_info in toDownloadFiles))
-    self.event_info.duration = round(time.time() - self.event_info.start_time, 2)
 
   async def save_file(self, bot: Bot, file: QQFile):
     file_path = Path(self.event_info.backup_directory, file.get("folder_name", ""), file["file_name"])
-    file_relative_path = f"{file.get('folder_name','')}/{file['file_name']}"
+    file_relative_path = f"{file.get('folder_name', '')}/{file['file_name']}"
 
     try:
       await self.download(bot=bot, file_path=file_path, file=file)
@@ -133,7 +137,6 @@ class BackupManager:
     root = await bot.get_group_root_files(group_id=group_id)
     self.event_info.qqfolder_entries.clear()
     folders = root.get("folders", [])
-    print(folders)
     self.event_info.qqfolder_entries.extend(QQFolder(fd) for fd in folders)
 
     folder_ids = {fd.get("folder_name", ""): fd["folder_id"] for fd in self.event_info.qqfolder_entries}
@@ -146,15 +149,12 @@ class BackupManager:
       except Exception as e:
         self.event_info.failed_files.append(f"{f.get('folder_name')}/{f['file_name']}")
         logger.error(f"上传文件失败:{f.get('folder_name')}/{f['file_name']} 错误: {e}")
-    self.event_info.duration = round(time.time() - self.event_info.start_time, 2)
 
   async def clear(self, bot: Bot, group_id: int, exts):
     files_to_delete = [file for file in self.event_info.qqfile_entries if file["file_name"].lower().split(".")[-1] in exts]
     for file in files_to_delete:
       await bot.call_api("delete_group_file", group_id=group_id, file_id=file["file_id"], busid=file["busid"])
       self.event_info.success_count += 1
-
-    self.event_info.duration = round(time.time() - self.event_info.start_time, 2)
 
 
 bm = BackupManager()
