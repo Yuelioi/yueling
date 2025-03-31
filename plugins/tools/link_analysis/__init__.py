@@ -1,10 +1,7 @@
 import re
 
-from nonebot import logger
+from nonebot import logger, on_message
 from nonebot.adapters import Event
-
-
-from nonebot import on_message
 from nonebot.plugin import PluginMetadata
 
 from plugins.tools.link_analysis.bilibili import bilibili
@@ -37,7 +34,6 @@ async def link_handler(event: Event):
   if url == last_url:
     return
   last_url = url
-  print(url)
 
   url_handlers = [
     (r"(blog.csdn.net)", csdn),

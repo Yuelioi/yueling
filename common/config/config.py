@@ -53,6 +53,7 @@ class CookieConfig(BaseModel):
 
 # 数据资源文件路径
 class Resource(BaseModel):
+  database: Path = Path()
   tmp: Path = Path()
   images: Path = Path()
   recycle: Path = Path()
@@ -70,16 +71,22 @@ class Data(BaseModel):
   group_members: Path = Path()
 
 
+class User(BaseModel):
+  tags: dict[str, list[str]] = {}
+
+
 # 总配置
 class Config(BaseModel):
   resource: Resource = Resource()
   data: Data = Data()
+  user: User = User()
   api_cfg: ApiConfig = ApiConfig()
   cookie: CookieConfig = CookieConfig()
   id: str = str(uuid.uuid4())  # 启动程序唯一id 暂时没用
 
 
 resource_paths = {
+  "database": "database",
   "tmp": "tmp",
   "images": "images",
   "recycle": "recycle",
@@ -96,7 +103,8 @@ data_paths = {
   "scheduler_config": "scheduler_config.json",
 }
 
+
 config = Config(
   resource=Resource(**{key: YUELING_DATA_FOLDER / path for key, path in resource_paths.items()}),
-  data=Data(**{key: YUELING_DATA_FOLDER / path for key, path in data_paths.items()}),
+  data=Data(**{key: YUELING_DATA_FOLDER / "database" / path for key, path in data_paths.items()}),
 )

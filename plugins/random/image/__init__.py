@@ -1,17 +1,8 @@
-from nonebot import on_fullmatch
+from nonebot import on_command, on_fullmatch
 from nonebot.plugin import PluginMetadata
 
 from common.base.Handle import register_handler
-from plugins.random.image.utils import (
-  get_cat,
-  get_dragon,
-  get_furi,
-  get_laogong,
-  get_mei,
-  get_moe,
-  get_shadiao,
-  get_zayu,
-)
+from plugins.random.image.utils import get_ba, get_cat, get_dragon, get_furi, get_laogong, get_mei, get_moe, get_shadiao, get_tags, get_zayu, search_tags
 
 __plugin_meta__ = PluginMetadata(
   name="随机图片",
@@ -22,21 +13,19 @@ __plugin_meta__ = PluginMetadata(
 
 
 cat = on_fullmatch(("随机猫猫", "来点猫猫"))
-
-
 dragon = on_fullmatch(("龙图", "龙图攻击"))
-
 furi = on_fullmatch(("福瑞", "来点福瑞"))
-
 laogong = on_fullmatch(("我老公呢", "老公"))
-
-laopo = on_fullmatch(("我老婆呢", "老婆"))
-
-mei = on_fullmatch("美少女")
-
 shadiao = on_fullmatch("沙雕图")
-
 zayu = on_fullmatch("杂鱼")
+ba = on_fullmatch("ba")
+
+laopo = on_command("我老婆呢", aliases={"老婆"})
+mei = on_command("美少女")
+
+search_tag = on_command("查看标签")
+all_tag = on_command("所有标签")
+
 
 # 注册事件处理器
 register_handler(cat, get_cat)
@@ -47,3 +36,6 @@ register_handler(laopo, get_moe)
 register_handler(mei, get_mei)
 register_handler(shadiao, get_shadiao)
 register_handler(zayu, get_zayu)
+register_handler(ba, get_ba)
+register_handler(search_tag, search_tags)
+register_handler(all_tag, get_tags)

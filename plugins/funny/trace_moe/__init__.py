@@ -19,10 +19,7 @@ __plugin_meta__ = PluginMetadata(
 trace = on_command("场景识别", aliases={"角色识别"})
 
 
-async def image_trace(
-  cmd=RawCommand(),
-  img=Img(required=True),
-):
+async def image_trace(cmd=RawCommand(), img=Img(required=True)):
   img_data = await api.fetch_image_from_url_ssl(img)
 
   if cmd == "场景识别":

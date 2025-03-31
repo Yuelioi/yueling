@@ -75,8 +75,8 @@ async def handle(bot: Bot, event: GroupMessageEvent, args: list[str] = Args(1, 2
   pdf_file = tmp_folder / (book_id + f"_{charpter_id}.pdf")
 
   if pdf_file.exists():
-    await bot.call_api("upload_group_file", group_id=event.group_id, file=str(pdf_file.resolve()), name=book_id + ".pdf")
-    return
+    # await bot.call_api("upload_group_file", group_id=event.group_id, file=str(pdf_file.resolve()), name=book_id + ".pdf")
+    await jm.finish(f"https://cdn.yuelili.com/bot/images/jm/{book_id}/{book_id}_{charpter_id}.pdf")
 
   # 获取章节
   logger.info("正在解析章节...")
@@ -131,7 +131,8 @@ async def handle(bot: Bot, event: GroupMessageEvent, args: list[str] = Args(1, 2
     logger.error(f"生成PDF失败: {e}")
   finally:
     if pdf_file.exists():
-      await bot.call_api("upload_group_file", group_id=event.group_id, file=str(pdf_file.resolve()), name=book_id + ".pdf")
+      # await bot.call_api("upload_group_file", group_id=event.group_id, file=str(pdf_file.resolve()), name=book_id + ".pdf")
+      await jm.finish(f"https://cdn.yuelili.com/bot/images/jm/{book_id}/{book_id}_{charpter_id}.pdf")
     else:
       await jm.finish("生成PDF失败")
 

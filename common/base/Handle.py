@@ -18,13 +18,15 @@ def res_handle(dependency: T_Handler | None = None):
     if res is None or not res:
       return
     try:
+      print(res)
       if isinstance(res, BytesIO) or isinstance(res, bytes) or isinstance(res, Path):
         await matcher.finish(MessageSegment.image(file=res))
       elif isinstance(res, MessageSegment):
         await matcher.finish(res)
       elif isinstance(res, Message):
         await matcher.finish(res)
-
+      elif isinstance(res, MessageSegment):
+        await matcher.finish(res)
       await matcher.finish(res)
     except FinishedException:
       return

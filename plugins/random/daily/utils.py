@@ -21,7 +21,6 @@ def get_images(folder_name: str):
 
 
 def get_drink():
-  print(get_images("喝的"))
   return get_images("喝的")
 
 

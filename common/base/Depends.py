@@ -127,11 +127,12 @@ def Img(required=False):
   async def dependency(event: Event, matcher: Matcher):
     imgs = get_imgs(event)
 
-    if required:
-      if not imgs:
-        await matcher.finish("请@一个用户后再试")
-      return next(iter(imgs))
+    if not imgs and required:
+      await matcher.finish("请提供一张图片/艾特一个群友")
 
-    return next(iter(imgs)) if imgs else None
+    if not imgs:
+      return ""
+
+    return next(iter(imgs))
 
   return Depends(dependency)
