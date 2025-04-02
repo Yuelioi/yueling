@@ -1,7 +1,8 @@
 import re
 
 from nonebot import logger, on_message
-from nonebot.adapters import Event
+from nonebot.adapters import Bot
+from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.plugin import PluginMetadata
 
 from plugins.tools.link_analysis.bilibili import bilibili
@@ -27,7 +28,10 @@ link_analysis = on_message()
 
 
 @link_analysis.handle()
-async def link_handler(event: Event):
+async def link_handler(
+  event: GroupMessageEvent,
+  bot: Bot,
+):
   global last_url
   url = event.get_plaintext()
 
@@ -54,5 +58,8 @@ async def link_handler(event: Event):
     match = re.search(pattern, url)
     if match:
       logger.info(f"链接解析:{url}")
-      res = await handler(url)
+      if "x.com" in pattern:
+        res = await handler(bot, event, url)
+      else:
+        res = await handler(url)
       return await link_analysis.finish(res)

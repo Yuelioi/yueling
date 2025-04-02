@@ -42,4 +42,4 @@ class ReplyDataManager(DBManagerBase):
       return False
 
 
-rpm = ReplyDataManager(db_path=config.data.database, table_name="reply")
+rpm = ReplyDataManager(db_path=config.resource.database / "data.db", table_name="reply")

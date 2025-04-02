@@ -5,7 +5,7 @@ from nonebot import on_fullmatch
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.plugin import PluginMetadata
 
-from common.config import config
+from common.config import gv
 from plugins.group.member.models import MemberInfo
 
 WorkingMessage = "正在处理中/未知错误"
@@ -31,7 +31,6 @@ async def write(file, data: dict):
 async def backup_members(bot: Bot, event: GroupMessageEvent):
   member_infos: list[MemberInfo] = await bot.get_group_member_list(group_id=event.group_id, no_cache=True)  # type: ignore
   group_id = str(event.group_id)
-  file = config.data.group_members
 
   members = []
 
@@ -46,14 +45,7 @@ async def backup_members(bot: Bot, event: GroupMessageEvent):
       }
     )
 
-  if file.exists():
-    async with aiofiles.open(file, encoding="utf-8") as f:
-      json_data = json.loads(await f.read())
-      json_data[group_id] = members
-    await write(file, json_data)
-
-  else:
-    json_data = {group_id: members}
-    await write(file, json_data)
+  gv.group_members[group_id] = members
+  gv.group_members.save()
 
   await member.finish("群友备份成功")

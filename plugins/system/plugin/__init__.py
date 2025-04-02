@@ -1,6 +1,3 @@
-import json
-
-import aiofiles
 from nonebot import on_command
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.exception import IgnoredException
@@ -11,7 +8,7 @@ from nonebot.plugin import PluginMetadata
 
 from common.base.Depends import Args
 from common.base.Handle import register_handler
-from common.config import config, gv
+from common.config import gv
 from plugins.system.plugin.manager import hm
 
 __plugin_meta__ = PluginMetadata(
@@ -68,9 +65,7 @@ async def manager_handler(event: GroupMessageEvent, cmd=RawCommand(), args: list
     msg += addon + " "
 
   gv.group_black_list[event.group_id] = ban
-
-  async with aiofiles.open(config.data.group_black_list, "w") as f:
-    await f.write(json.dumps(gv.group_black_list, ensure_ascii=False, indent=4))
+  gv.group_black_list.save()
 
   # 返回结果
   return msg

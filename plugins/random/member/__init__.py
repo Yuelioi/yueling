@@ -18,7 +18,6 @@ member = on_regex("抽(.*)群友(.*)|随机.*群友.*|来个.*群友.*|来点.*�
 
 
 async def random_member(bot: Bot, event: GroupMessageEvent):
-  user = event.get_user_id()
   group_info = await bot.get_group_member_list(group_id=event.group_id, no_cache=True)  # type: ignore
 
   limit = 25
@@ -28,13 +27,9 @@ async def random_member(bot: Bot, event: GroupMessageEvent):
   member_info = random.choice(group_info)
   user_id, nickname = member_info["user_id"], member_info["nickname"]
 
-  msg = MessageSegment.at(int(user))
+  msg = MessageSegment.at(event.user_id)
   msg += MessageSegment.text(f"你抽到的是:{nickname}\n")
   msg += MessageSegment.image(f"https://q.qlogo.cn/headimg_dl?dst_uin={user_id}&spec=640")
-
-  whitelist = [913322478, 48896449]
-  if int(user_id) in whitelist:
-    msg += MessageSegment.at(int(user_id))
 
   return msg
 

@@ -92,4 +92,4 @@ class ReplyDataManager(DBManagerBase):
       return False
 
 
-rcm = ReplyDataManager(db_path=config.data.database, table_name="record")
+rcm = ReplyDataManager(db_path=config.resource.database / "data.db", table_name="record")

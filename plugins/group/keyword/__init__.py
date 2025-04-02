@@ -1,7 +1,4 @@
-import json
-
-import aiofiles
-from nonebot import logger, on_command
+from nonebot import on_command
 from nonebot.adapters import Bot
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.message import event_preprocessor
@@ -10,7 +7,7 @@ from nonebot.plugin import PluginMetadata
 
 from common.base.Depends import Args
 from common.base.Handle import register_handler
-from common.config import config, gv
+from common.config import gv
 
 __plugin_meta__ = PluginMetadata(
   name="关键词屏蔽",
@@ -32,15 +29,6 @@ async def _(bot: Bot, event: GroupMessageEvent):
         break
 
 
-async def save_keywords():
-  try:
-    async with aiofiles.open(config.data.group_ban_keywords, "w+", encoding="utf8") as f:
-      await f.write(json.dumps(gv.group_ban_keywords, ensure_ascii=False))
-  except Exception as e:
-    logger.error(f"保存关键字时出错: {e}")
-    await keywords.finish("保存关键字时出错，请稍后再试")
-
-
 async def _kd(event: GroupMessageEvent, args: list[str] = Args(0), cmd=RawCommand()):
   group_id = str(event.group_id)
   if cmd in ["添加屏蔽", "删除屏蔽", "取消屏蔽"]:
@@ -52,7 +40,7 @@ async def _kd(event: GroupMessageEvent, args: list[str] = Args(0), cmd=RawComman
       group = gv.group_ban_keywords.setdefault(group_id, [])
       if not all(arg in group for arg in args):
         group.extend(arg for arg in args if arg not in group)
-        await save_keywords()
+        gv.group_ban_keywords.save()
       return "添加屏蔽成功"
 
     else:
@@ -60,7 +48,8 @@ async def _kd(event: GroupMessageEvent, args: list[str] = Args(0), cmd=RawComman
       group = gv.group_ban_keywords.get(group_id, [])
       if not all(arg not in group for arg in args):
         group[:] = [arg for arg in group if arg not in args]
-        await save_keywords()
+        gv.group_ban_keywords.save()
+
       return "删除屏蔽蔽成功"
 
   # 查看屏蔽

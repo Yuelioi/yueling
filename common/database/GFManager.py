@@ -57,4 +57,4 @@ class GFM(DBManagerBase):
       return f"删除文件ID为 {file_id} 的数据时发生错误：{e}"
 
 
-gfm = GFM(db_path=config.data.database, table_name="groupfiles")
+gfm = GFM(db_path=config.resource.database / "data.db", table_name="groupfiles")

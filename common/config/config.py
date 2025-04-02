@@ -62,24 +62,9 @@ class Resource(BaseModel):
   groups: Path = Path()
 
 
-# 数据
-class Data(BaseModel):
-  database: Path = Path()
-  group_black_list: Path = Path()
-  group_ban_keywords: Path = Path()
-  scheduler_config: Path = Path()
-  group_members: Path = Path()
-
-
-class User(BaseModel):
-  tags: dict[str, list[str]] = {}
-
-
 # 总配置
 class Config(BaseModel):
   resource: Resource = Resource()
-  data: Data = Data()
-  user: User = User()
   api_cfg: ApiConfig = ApiConfig()
   cookie: CookieConfig = CookieConfig()
   id: str = str(uuid.uuid4())  # 启动程序唯一id 暂时没用
@@ -106,5 +91,4 @@ data_paths = {
 
 config = Config(
   resource=Resource(**{key: YUELING_DATA_FOLDER / path for key, path in resource_paths.items()}),
-  data=Data(**{key: YUELING_DATA_FOLDER / "database" / path for key, path in data_paths.items()}),
 )
