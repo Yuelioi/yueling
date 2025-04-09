@@ -33,7 +33,7 @@ async def chat_handle(bot: Bot, event: GroupMessageEvent, at=At()):
     MSG = msg.replace("chat", "").strip()
     user_id = event.user_id
     user_info = await bot.call_api("get_group_member_info", group_id=event.group_id, user_id=user_id, no_cache=True)
-    group_messages = await bot.call_api("get_group_msg_history", group_id=event.group_id, message_id=str(event.message_id), count=20)
+    group_messages = await bot.call_api("get_group_msg_history", group_id=event.group_id, message_id=str(event.message_id), count=100)
 
     msg = chat_ai(MSG, user_info, group_messages["messages"])
     await matcher.finish(msg)

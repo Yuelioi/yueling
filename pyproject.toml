@@ -9,7 +9,7 @@ requires-python = ">=3.10, <4.0"
 adapters = [
   { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
 ]
-plugins = [ "nonebot_plugin_memes","plugins.funny","plugins.group","plugins.random","plugins.scheduler","plugins.system","plugins.tools","plugins.game","plugins.user"]
+plugins = [ "nonebot_plugin_memes","nonebot_plugin_alconna", "plugins.funny","plugins.group","plugins.random","plugins.scheduler","plugins.system","plugins.tools","plugins.game","plugins.user"]
 
 
 

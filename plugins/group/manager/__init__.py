@@ -21,11 +21,8 @@ async def _(bot: Bot, event: GroupRequestEvent):
 
   comment = comment.lower()
 
-  if "交流" in comment or "我是" in comment:
-    await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=False, reason="机器人爬")
-
   if event.group_id == 587443081:
-    if "月离" in comment or "bi" in comment or "哔" in comment:
+    if "月离" in comment or "b" in comment or "哔" in comment:
       await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=True, reason=" ")
 
   elif event.group_id == 885816198:
@@ -38,3 +35,6 @@ async def _(bot: Bot, event: GroupRequestEvent):
   elif event.group_id == 151998078:
     if comment != "":
       await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=True, reason=" ")
+
+  if "交流" in comment or "我是" in comment:
+    await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=False, reason="机器人爬")

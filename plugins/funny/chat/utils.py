@@ -74,7 +74,7 @@ def convert_messages(raw_group_messages: list) -> str:
   # 返回最新的10条消息（保留时间顺序）
   if not processed:
     return "暂时还没有聊天记录哦～(´•ω•̥`)"
-  return "\n".join(f"[{msg['nickname']} ➔ {msg['text']}]" for msg in processed[-11:-1])
+  return "\n".join(f"[{msg['nickname']} ➔ {msg['text']}]" for msg in processed[-41:-1])
 
 
 def chat_ai(content: str, user_info: GroupMemberInfo, raw_messages: list):

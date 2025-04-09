@@ -50,8 +50,9 @@ async def repeater_handler(
   uid = str(event.user_id)
 
   for addon in hm.Addons.values():
-    if raw_message in addon.commands:
-      return
+    for command in addon.commands:
+      if command in raw_message:
+        return
 
   # 如果当前消息与记录消息不符合
   if message != last_message.get(gid):

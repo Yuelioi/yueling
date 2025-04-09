@@ -21,15 +21,8 @@ def detect_image_type(data: bytes):
 
 
 def name_gene(cmd: str = "", filename: str = "", group="", uploader=""):
-  if cmd in [
-    "添加老婆",
-    "添加老公",
-    "添加龙图",
-    "添加杂鱼",
-    "添加沙雕图",
-    "添加美少女",
-    "添加福瑞",
-  ]:
+  # hash文件名
+  if cmd in ["添加老婆", "添加老公", "添加龙图", "添加杂鱼", "添加沙雕图", "添加美少女", "添加福瑞", "添加ba"]:
     return ""
 
   if cmd in ["添加表情"]:

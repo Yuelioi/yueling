@@ -1,13 +1,11 @@
 import hashlib
 import json
-import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Union
 
-from common.base.Depends import Img
 from common.config import config
 
 MAX_WORKERS = 6
@@ -15,7 +13,7 @@ MAX_WORKERS = 6
 HASH_BLOCK_SIZE = 4096
 database = config.resource.database
 storage = config.resource.images
-categories = ["吃的", "喝的", "拍一拍", "杂鱼", "水果", "沙雕图", "玩的", "福瑞", "美少女", "老公", "老婆", "表情", "语录", "零食", "龙图"]
+categories = ["吃的", "喝的", "拍一拍", "杂鱼", "水果", "沙雕图", "玩的", "福瑞", "美少女", "老公", "老婆", "表情", "语录", "零食", "龙图", "ba"]
 
 recycle = config.resource.recycle
 
@@ -206,8 +204,8 @@ class ImageStorage:
 
     # 存储文件
     if not filename:
-      filename = f"{file_hash}{suffix}"
-    target_path = storage / self.category / filename
+      filename = file_hash
+    target_path = storage / self.category / f"{filename}.{suffix}"
 
     with open(target_path, "wb") as f:
       f.write(image_data)

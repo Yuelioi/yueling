@@ -4,19 +4,15 @@ import time
 from typing import cast
 
 import aiofiles
-from fastapi import APIRouter
-from nonebot import get_bot
-
-from plugins.group.file.utils import get_qq_folder_files, get_root
-
-file = APIRouter()
-
 from fastapi import APIRouter, File, UploadFile
 from nonebot import get_bot
 from nonebot.adapters.onebot.v11 import Bot
 
 from common.biz import result
 from common.config import config
+from plugins.group.file.utils import get_qq_folder_files, get_root
+
+file = APIRouter()
 
 
 @file.get("/files", response_model=dict)

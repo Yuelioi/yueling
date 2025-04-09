@@ -5,7 +5,7 @@ import aiohttp
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 
 from common.base.Depends import Arg, Args, Img
-from common.config import config
+from common.config import config, gv
 from common.database.ImageManager import idb
 from common.utils import api
 from common.utils.rnd import get_random_image
@@ -38,13 +38,9 @@ async def search_tags(img_url: str = Img(required=True)):
 
 
 async def get_ba():
-  url = "https://pic.0013107.xyz/pic?type=ba"
-
-  proxy = "http://127.0.0.1:10808"
-
-  async with aiohttp.ClientSession(proxy=proxy) as session:
-    async with session.get(url) as response:
-      return await api.fetch_image_from_url(response.url.__str__())
+  img_folder = "ba"
+  if random_file := get_random_image(img_folder):
+    return random_file
 
 
 async def get_cat():
@@ -72,15 +68,15 @@ async def get_moe(event: GroupMessageEvent, tags=Args(0)):
   # https://api.ixiaowai.cn/api/api.php
   # https://api.yujn.cn/
 
-  query_tags = split_tags(" ".join(tags)) or config.user.tags.get(str(event.user_id), [])
+  query_tags = split_tags(" ".join(tags)) or gv.user_tags.get(str(event.user_id), [])
+  img_folder = "老婆"
 
   if query_tags:
-    imgs = idb.search_images_by_tag("老婆", query_tags)
+    imgs = idb.search_images_by_tag(img_folder, query_tags)
     if imgs:
       img = random.choice(imgs)
-      return config.resource.images / "老婆" / img.filename
+      return config.resource.images / img_folder / img.filename
     return "找不到符合您XP的图(请减少标签数量/检查标签是否正确)"
-  img_folder = "老婆"
   if random_file := get_random_image(img_folder):
     return random_file
 

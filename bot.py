@@ -10,7 +10,7 @@ driver.register_adapter(ONEBOT_V11Adapter)
 __import__("bootstrap")
 nonebot.load_plugin("nonebot_plugin_apscheduler")
 nonebot.load_from_toml("pyproject.toml")
-nonebot.load_builtin_plugins("echo")
+
 # __import__("server")
 
 

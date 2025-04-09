@@ -14,7 +14,6 @@ driver = get_driver()
 app.router.include_router(router)
 
 
-# 定义单个消息的模型
 class SingleMessage(BaseModel):
   content: str | int = Field(..., description="消息内容")
   type: str = Field("text", description="消息类型，默认为文本消息")
