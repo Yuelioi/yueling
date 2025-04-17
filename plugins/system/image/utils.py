@@ -42,14 +42,17 @@ def name_gene(cmd: str = "", filename: str = "", group="", uploader=""):
     return generate_random_code()
 
 
-async def add_images(cmd: str, group_id, user_id, arg: str, imgs: list[str] = []):
+async def add_images(cmd: str, group_id: int, user_id: int, arg: str, imgs: list[str] = []):
   msgs = ""
+
+  if cmd == "添加ba" and not user_id == 435826135:
+    return "权限不足!!"
 
   for index, img in enumerate(imgs):
     virtual_file = await api.fetch_image_from_url_ssl(img)
     try:
       img_data = virtual_file.read()
-      filename = name_gene(cmd, arg, group_id, user_id)
+      filename = name_gene(cmd, arg, str(group_id), str(user_id))
       cat = cmd.replace("添加", "").replace("表情包", "包")
       suffix = detect_image_type(img_data)
       idb.add_image(cat, img_data, suffix, filename)

@@ -59,8 +59,10 @@ save_dir = config.config.resource.images / "jm"
 @jm.handle()
 async def handle(bot: Bot, event: GroupMessageEvent, args: list[str] = Args(1, 2)):
   """主程序"""
-  if not str(event.group_id).startswith("827264"):
+  gid = event.group_id
+  if gid not in [761708854, 827264496]:
     return
+  logger.info(f"jm download{args}")
 
   session = create_session()
   book_id = args[0]

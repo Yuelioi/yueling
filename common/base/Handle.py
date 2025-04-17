@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Callable
 
 from nonebot import logger
+from nonebot.adapters import Bot
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
 from nonebot.exception import FinishedException
 from nonebot.matcher import Matcher
@@ -12,6 +13,7 @@ from nonebot.typing import T_Handler
 
 def res_handle(dependency: T_Handler | None = None):
   async def handle(
+    bot: Bot,
     matcher: Matcher,
     res=Depends(dependency),
   ):

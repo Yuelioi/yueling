@@ -72,8 +72,8 @@ async def manage_image(event: GroupMessageEvent, cmd=RawCommand(), imgs: list[st
   return await add_images(cmd=cmd, group_id=event.group_id, user_id=event.user_id, imgs=imgs, arg=arg)
 
 
-async def delete_image_handler(event: Event, img: str = Img(required=True)):
-  return await delete_image(user_id=int(event.get_user_id()), img=img)
+async def delete_image_handler(event: GroupMessageEvent, img: str = Img(required=True)):
+  return await delete_image(user_id=event.user_id, img=img)
 
 
 async def summary_handler():
