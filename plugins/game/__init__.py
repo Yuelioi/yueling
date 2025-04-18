@@ -11,4 +11,4 @@ __plugin_meta__ = PluginMetadata(
 __version__ = "1.0.0"
 
 
-sub_plugins = load_mods("game", *["pk"])
+sub_plugins = load_mods("game", *["pk", "jw3"])
