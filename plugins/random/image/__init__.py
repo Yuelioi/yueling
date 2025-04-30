@@ -8,7 +8,7 @@ __plugin_meta__ = PluginMetadata(
   name="随机图片",
   description="随机获取图片",
   usage="""随机猫猫/龙图/福瑞/我老公呢/我老婆呢/美少女/沙雕图/杂鱼""",
-  extra={"group": "随机", "commands": ["随机猫猫", "龙图", "福瑞", "我老公呢", "我老婆呢", "美少女", "沙雕图", "杂鱼", "ba"]},
+  extra={"group": "随机", "commands": ["随机猫猫", "龙图", "福瑞", "老婆", "我老公呢", "我老婆呢", "美少女", "沙雕图", "杂鱼", "ba"]},
 )
 
 
@@ -18,7 +18,7 @@ furi = on_fullmatch(("福瑞", "来点福瑞"))
 laogong = on_fullmatch(("我老公呢", "老公"))
 shadiao = on_fullmatch("沙雕图")
 zayu = on_fullmatch("杂鱼")
-ba = on_fullmatch("ba")
+ba = on_command("ba")
 
 laopo = on_command("我老婆呢", aliases={"老婆"})
 mei = on_command("美少女")

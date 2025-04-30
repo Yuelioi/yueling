@@ -1,7 +1,6 @@
 import random
 import re
 
-import aiohttp
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 
 from common.base.Depends import Arg, Args, Img
@@ -9,6 +8,7 @@ from common.config import config, gv
 from common.database.ImageManager import idb
 from common.utils import api
 from common.utils.rnd import get_random_image
+from plugins.random.image.ba import get_random_image_by_tag
 
 
 def split_tags(text: str) -> list:
@@ -37,10 +37,45 @@ async def search_tags(img_url: str = Img(required=True)):
     return "暂时没有标签喔"
 
 
-async def get_ba():
-  img_folder = "ba"
-  if random_file := get_random_image(img_folder):
-    return random_file
+async def get_ba(args=Args(0, 99)):
+  if img := await get_random_image_by_tag("".join(args)):
+    return img
+
+  roles = [
+    "阿罗娜",
+    "普拉纳",
+    "琪咲",
+    "空崎雏",
+    "星野",
+    "圣园美卡",
+    "宇泽雷萨",
+    "小春",
+    "玛丽",
+    "宫子",
+    "青亚",
+    "丹花伊吹",
+    "嬉笑教授",
+    "霞泽美优",
+    "内海青羽",
+    "修波咯基",
+    "屑之羽",
+    "睦月",
+    "阿露",
+    "白梓",
+    "阿慈谷",
+    "柚",
+    "爱丽丝",
+    "心奈",
+    "杏山和纱",
+    "白子",
+    "小桃",
+    "飞鸟马时",
+    "芹香",
+    "调月莉奥",
+    "群众",
+  ]
+
+  return "没有对应tag/没有数据:" + "/".join(roles)
 
 
 async def get_cat():
@@ -70,6 +105,9 @@ async def get_moe(event: GroupMessageEvent, tags=Args(0)):
 
   query_tags = split_tags(" ".join(tags)) or gv.user_tags.get(str(event.user_id), [])
   img_folder = "老婆"
+
+  if event.user_id == 435826135 and not tags:
+    img_folder = "pln"
 
   if query_tags:
     imgs = idb.search_images_by_tag(img_folder, query_tags)
