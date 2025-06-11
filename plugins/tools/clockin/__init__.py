@@ -1,11 +1,19 @@
 import re
 
-from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
-
-from common.database.RecordManager import Record, rcm
-from common.base.Handle import register_handler
-
 from nonebot import on_fullmatch
+from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
+from nonebot.plugin import PluginMetadata
+
+from common.base.Handle import register_handler
+from common.database.RecordManager import Record, rcm
+
+__plugin_meta__ = PluginMetadata(
+  name="打卡",
+  description="每日打卡",
+  usage="""打卡  """,
+  extra={"group": "工具", "commands": ["打卡"]},
+)
+
 
 clock_in = on_fullmatch("打卡")
 

@@ -68,7 +68,7 @@ async def add_images(cmd: str, group_id: int, user_id: int, arg: str, imgs: list
 async def delete_image(user_id: int, img: str):
   """删除图片 并加入回收站"""
 
-  if user_id not in [435826135, 963036493, 1239245970, 1284773289, 405850498]:
+  if user_id not in [435826135, 963036493, 1239245970, 1284773289, 405850498, 21615991]:
     return "就凭你也想访问本小姐的系统!"
 
   if not img:

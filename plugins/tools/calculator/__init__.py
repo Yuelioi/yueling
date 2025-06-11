@@ -6,16 +6,13 @@ from nonebot.plugin import PluginMetadata
 from common.base.Depends import Args
 from common.base.Handle import register_handler
 
-
 __plugin_meta__ = PluginMetadata(
   name="计算器",
   description="加减乘除/比较/位运算/幂模/大于小于",
   usage="""计算 + 需要计算的内容
 如计算 12*21
   """,
-  extra={
-    "group": "工具",
-  },
+  extra={"group": "工具", "commands": ["计算"]},
 )
 
 calculator = on_command("计算")

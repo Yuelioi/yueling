@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10, <4.0"
 dependencies = [
     "asyncpg>=0.30.0",
+    "httpx==0.27",
     "tortoise-orm>=0.25.0",
 ]
 

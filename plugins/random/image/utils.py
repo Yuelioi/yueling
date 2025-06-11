@@ -38,6 +38,10 @@ async def search_tags(img_url: str = Img(required=True)):
 
 
 async def get_ba(args=Args(0, 99)):
+  img_folder = "ba"
+  if random_file := get_random_image(img_folder):
+    return random_file
+
   if img := await get_random_image_by_tag("".join(args)):
     return img
 

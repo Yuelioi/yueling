@@ -30,7 +30,7 @@ for item in config.resource.tmp.iterdir():
 
 
 @driver.on_bot_connect
-async def _bot_connect(bot: Bot):
+async def connect(bot: Bot):
   await Tortoise.init(
     db_url=DB_PATH,
     modules={"models": ["common.models.ba"]},
@@ -39,5 +39,5 @@ async def _bot_connect(bot: Bot):
 
 
 @driver.on_bot_disconnect
-async def _bot_disconnect():
+async def disconnect():
   await Tortoise.close_connections()

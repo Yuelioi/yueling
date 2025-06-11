@@ -19,10 +19,9 @@ reboot = on_command("重启")
 
 
 @reboot.handle()
-async def rb(arg=Arg(required=True)):
-  services = {"la": "la", "bot": "bot"}
-  service = services.get(arg, "bot")
-  if not service:
+async def rb(service=Arg(required=True)):
+  services = ["la", "bot"]
+  if service not in services:
     return
 
   command = f"sudo supervisorctl restart {service}"

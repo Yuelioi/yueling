@@ -88,16 +88,16 @@ async def set_score(image_hash: str, score: int):
 
 
 async def fetch_image(url: str):
-  # 设置请求头，包括 Referer
   headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Referer": "https://www.pixiv.net/",
   }
 
-  # 发起异步请求
+  proxy = "http://127.0.0.1:10808"
+
   try:
     async with aiohttp.ClientSession() as session:
-      async with session.get(url, headers=headers) as response:
+      async with session.get(url, headers=headers, proxy=proxy) as response:
         if response.status != 200:
           raise Exception(f"Failed to fetch image, status: {response.status}")
 
