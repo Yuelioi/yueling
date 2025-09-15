@@ -26,6 +26,8 @@ async def _(bot: Bot, event: GroupRequestEvent):
       await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=True, reason=" ")
 
   elif event.group_id == 885816198:
+    if comment == "java":
+      await bot.bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=False, reason="答案错误")
     if ("j" in comment and "s" in comment) or ("e" in comment and "s" in comment):
       await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=True, reason=" ")
 

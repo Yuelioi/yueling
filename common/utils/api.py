@@ -24,8 +24,6 @@ async def fetch_text_from_url(url: str):
 
 
 async def fetch_image_from_url(url: str, headers=None, **params):
-  # url = url.replace("multimedia.nt.qq.com.cn", "gchat.qpic.cn")
-
   _headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
   }

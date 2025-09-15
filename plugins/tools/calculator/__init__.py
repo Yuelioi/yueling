@@ -63,8 +63,8 @@ async def _calc(args: list[str] = Args()):
     except Exception as e:
       return str(e)
 
-  else:
-    return "语法错误"
+  # else:
+  # return "语法错误"
 
 
 register_handler(calculator, _calc)

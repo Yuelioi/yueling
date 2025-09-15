@@ -1,9 +1,8 @@
 import random
-import re
 from typing import cast
 
-from nonebot import on_message, require
-from nonebot.adapters import Bot, Event
+from nonebot import on_message
+from nonebot.adapters import Bot
 from nonebot.adapters.onebot.v11 import Bot as BotV11
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.plugin import PluginMetadata
@@ -28,6 +27,7 @@ banlist = [680653092, 761708854]  # 在机器人后面复读的 都禁言
 last_message = {}
 message_times = {}
 whitelist = [48896449, 435826135]
+commands = ["随机表情自己"]
 
 
 @repeater.handle()
@@ -48,6 +48,9 @@ async def repeater_handler(
 
   gid = str(event.group_id)
   uid = str(event.user_id)
+
+  if raw_message in commands:
+    return
 
   for addon in hm.Addons.values():
     for command in addon.commands:

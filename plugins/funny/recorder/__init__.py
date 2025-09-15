@@ -2,6 +2,7 @@ import time
 
 from nonebot import on_message
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
+from nonebot.matcher import Matcher
 from nonebot.plugin import PluginMetadata
 
 from common.config import config

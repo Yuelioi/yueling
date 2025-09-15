@@ -118,7 +118,7 @@ async def get_moe(event: GroupMessageEvent, tags=Args(0)):
     if imgs:
       img = random.choice(imgs)
       return config.resource.images / img_folder / img.filename
-    return "找不到符合您XP的图(请减少标签数量/检查标签是否正确)"
+    # return "找不到符合您XP的图(请减少标签数量/检查标签是否正确)"
   if random_file := get_random_image(img_folder):
     return random_file
 

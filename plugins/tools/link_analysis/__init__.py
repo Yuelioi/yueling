@@ -5,6 +5,7 @@ from nonebot.adapters import Bot
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.plugin import PluginMetadata
 
+from plugins.tools.link_analysis.behance import behance
 from plugins.tools.link_analysis.bilibili import bilibili
 from plugins.tools.link_analysis.csdn import csdn
 from plugins.tools.link_analysis.twitter import twitter
@@ -47,6 +48,7 @@ async def link_handler(
     (r"(weibo.com)|(weibo.cn)", weibo),
     (r"(youtube.com)", youtube),
     (r"(x.com)", twitter),
+    (r"(behance.net/gallery/.+)", behance),
     # (r"(github.com)", github),
     (
       r"(b23.tv)|(bili(22|23|33|2233).cn)|(.bilibili.com)|(^(av|cv)(\\d+))|(^BV([a-zA-Z0-9]{10})+)|(\\[\\[QQ小程序\\]哔哩哔哩\\])|(QQ小程序&amp;#93;哔哩哔哩)|(QQ小程序&#93;哔哩哔哩)",

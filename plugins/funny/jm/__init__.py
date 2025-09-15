@@ -59,6 +59,7 @@ save_dir = config.config.resource.images / "jm"
 @jm.handle()
 async def handle(bot: Bot, event: GroupMessageEvent, args: list[str] = Args(1, 2)):
   """主程序"""
+
   gid = event.group_id
   if gid not in [761708854, 827264496]:
     return
