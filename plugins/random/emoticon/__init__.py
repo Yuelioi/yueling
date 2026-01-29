@@ -6,7 +6,7 @@ from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 from nonebot.matcher import Matcher
 from nonebot.plugin import PluginMetadata
 
-from common.base.Depends import Ats
+from common.base.Depends import Ats, Imgs
 from common.utils import get_random_images
 
 __plugin_meta__ = PluginMetadata(
@@ -23,7 +23,7 @@ emoticon = on_message()
 
 
 @emoticon.handle()
-async def emoticon_handle(event: GroupMessageEvent, matcher: Matcher, ats=Ats(0, 0)):
+async def emoticon_handle(event: GroupMessageEvent, matcher: Matcher, ats=Ats(0, 0), imgs=Imgs(0, 0)):
   cmd = ""
   args = ""
   text = event.get_plaintext()
