@@ -11,4 +11,4 @@ __plugin_meta__ = PluginMetadata(
 __version__ = "1.0.0"
 
 
-sub_plugins = load_mods("group", *["ban", "file", "member", "keyword", "manager", "revoke"])
+sub_plugins = load_mods("group", *["ban", "files", "member", "keyword", "manager", "revoke"])

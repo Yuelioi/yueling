@@ -10,8 +10,8 @@ import re
 import aiohttp
 from nonebot import logger
 
-from common.utils.api import fetch_image_from_url
-from plugins.group.file.utils import fetch_file_url
+
+
 
 """
 https://weibo.com/1195908387/5125394590599698 not work
