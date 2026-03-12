@@ -8,7 +8,6 @@ from nonebot.adapters import Bot
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message, MessageSegment
 
 from common.config.config import proxy
-from common.utils import api
 from common.utils.translate import tran_deepl_pro
 
 
@@ -49,17 +48,22 @@ async def twitter(bot: Bot, event: GroupMessageEvent, url: str) -> Message | Non
   if translated and translated != text:
     header += f"\n翻译: {translated}"
 
-  # 有视频：下载后上传到群文件
+  # 有视频：通过代理下载后上传到群文件
   if videos:
     video_url = videos[0].get("url", "")
     if video_url:
       try:
-        bio = await api.fetch_image_from_url(video_url, None, proxy=proxy or None)
+        async with aiohttp.ClientSession() as session:
+          async with session.get(video_url, proxy=proxy or None, timeout=aiohttp.ClientTimeout(total=60)) as resp:
+            if resp.status != 200:
+              raise Exception(f"HTTP {resp.status}")
+            video_bytes = await resp.read()
+
         now = datetime.now().strftime("%Y%m%d%H%M%S")
         with tempfile.NamedTemporaryFile(mode="wb", delete=False, suffix=".mp4") as tmp:
-          bio.seek(0)
-          tmp.write(bio.read())
+          tmp.write(video_bytes)
           tmp_path = tmp.name
+
         await bot.call_api(
           "send_group_msg",
           group_id=event.group_id,
@@ -68,7 +72,7 @@ async def twitter(bot: Bot, event: GroupMessageEvent, url: str) -> Message | Non
         await bot.call_api(
           "upload_group_file",
           group_id=event.group_id,
-          file=tmp_path,
+          file=f"file://{tmp_path}",
           name=f"{now}.mp4",
         )
         return None
