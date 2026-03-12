@@ -131,7 +131,7 @@ def get_laogong():
 
 
 def get_shadiao():
-  folder = "沙雕"
+  folder = "沙雕图"
   random_file = get_random_image(folder)
   if random_file:
     return random_file

@@ -2,7 +2,9 @@ from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from time import time
-from typing import Any
+from typing import Any,TypeVar
+from contextlib import contextmanager
+
 
 from nonebot import logger
 from sqlalchemy import (
@@ -19,6 +21,7 @@ from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from common.models import Element
 
 
+
 @dataclass
 class DBManagerBase:
   db_path: str | Path
@@ -31,6 +34,8 @@ class DBManagerBase:
   table: Table = field(init=False)
   columns: list = field(default_factory=list)
   headers: list = field(init=False)
+
+
 
   def __post_init__(self):
     try:
@@ -99,6 +104,15 @@ class DBManagerBase:
   def _tables(self):
     """Return a list of table names in the database."""
     return list(self.metadata.tables.keys())
+  
+  @contextmanager
+  def get_connection(self):
+      """安全的连接上下文管理器"""
+      conn = self.engine.connect()
+      try:
+          yield conn
+      finally:
+          conn.close()
 
   def to_dict(self, result: Row[Any]):
     """Convert a single result to a dictionary."""
@@ -108,23 +122,24 @@ class DBManagerBase:
     """Convert multiple results to a list of dictionaries."""
     return [dict(zip(self.headers, row)) for row in result]
 
-  def insert_data(self, element: Element, max_retries=3, delay=1) -> bool:
-    """Insert a single element into the database."""
+  def insert_data(self, element: Element, max_retries: int = 3, delay: float = 1) -> bool:
+    """插入单条数据，带事务支持"""
     for attempt in range(max_retries):
-      try:
-        self.conn.execute(self.table.insert().values(**asdict(element)))
-        self.conn.commit()
-        return True
-      except OperationalError as e:
-        if "database is locked" in str(e):
-          logger.warning(f"Database is locked. Retrying ({attempt + 1}/{max_retries})...")
-          time.sleep(delay)
-        else:
-          logger.error(f"Database operation failed: {e}")
-          break
-      except SQLAlchemyError as e:
-        logger.error(f"SQLAlchemy error: {e}")
-        break
+        try:
+            with self.get_connection() as conn:
+                with conn.begin():  # 自动事务管理
+                    conn.execute(self.table.insert().values(**asdict(element)))
+            return True
+        except OperationalError as e:
+            if "database is locked" in str(e) and attempt < max_retries - 1:
+                logger.warning(f"数据库锁定，重试 ({attempt + 1}/{max_retries})...")
+                time.sleep(delay)
+            else:
+                logger.error(f"数据库操作失败: {e}")
+                return False
+        except SQLAlchemyError as e:
+            logger.error(f"SQLAlchemy 错误: {e}")
+            return False
     return False
 
   def insert_datas(self, elements: Sequence[Element], max_retries=3, delay=1) -> bool:
@@ -152,3 +167,12 @@ class DBManagerBase:
     if not success:
       logger.error("Failed to insert data after multiple retries.")
     return success
+
+
+  def __enter__(self):
+      """支持 with 语句"""
+      return self
+  
+  def __exit__(self, exc_type, exc_val, exc_tb):
+      """自动清理资源"""
+      self._close()
