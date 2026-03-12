@@ -8,6 +8,7 @@ from nonebot.adapters import Bot
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message, MessageSegment
 
 from common.config.config import proxy
+from common.utils import api
 from common.utils.translate import tran_deepl_pro
 
 
@@ -46,39 +47,23 @@ async def twitter(bot: Bot, event: GroupMessageEvent, url: str) -> Message | Non
   translated = tran_deepl_pro(text) if text else ""
   header = f"🐦 @{screen_name} ({name})\n原文: {text}"
   if translated and translated != text:
-    header += f"\n翻译: {translated}"
+    header += f"\n\n翻译: {translated}"
 
-  # 有视频：通过代理下载后上传到群文件
+  msg = Message(MessageSegment.text(header))
+  return msg
+
+  # 有视频：下载后上传到群文件
   if videos:
-    video_url = videos[0].get("url", "")
-    if video_url:
-      try:
-        async with aiohttp.ClientSession() as session:
-          async with session.get(video_url, proxy=proxy or None, timeout=aiohttp.ClientTimeout(total=60)) as resp:
-            if resp.status != 200:
-              raise Exception(f"HTTP {resp.status}")
-            video_bytes = await resp.read()
+    video = videos[0]
+    thumb = video.get("thumbnail_url") or video.get("poster")
 
-        now = datetime.now().strftime("%Y%m%d%H%M%S")
-        with tempfile.NamedTemporaryFile(mode="wb", delete=False, suffix=".mp4") as tmp:
-          tmp.write(video_bytes)
-          tmp_path = tmp.name
+   
 
-        await bot.call_api(
-          "send_group_msg",
-          group_id=event.group_id,
-          message={"type": "text", "data": {"text": header}},
-        )
-        await bot.call_api(
-          "upload_group_file",
-          group_id=event.group_id,
-          file=f"file://{tmp_path}",
-          name=f"{now}.mp4",
-        )
-        return None
-      except Exception as e:
-        logger.error(f"推特视频下载/上传失败: {e}")
-        return Message(MessageSegment.text(header + "\n(视频下载失败)"))
+    if thumb:
+      msg += MessageSegment.image(thumb)
+
+    msg += MessageSegment.text("\n🎬 视频内容（未下载）")
+    return msg
 
   # 无视频：文字 + 图片（最多4张）
   msg = Message(MessageSegment.text(header))
