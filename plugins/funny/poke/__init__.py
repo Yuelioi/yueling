@@ -14,8 +14,6 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
-user_data = {}
-
 pk = on_notice()
 
 

@@ -28,7 +28,7 @@ async def fortune_divine(event: GroupMessageEvent, theme=Arg()):
   uid: str = str(event.get_user_id())
   is_first, image_file = fortune_manager.divine(uid, theme)
   if image_file is None:
-    return "今日运势生成出错……"
+    await fortune.finish("今日运势生成出错……")
   if not is_first:
     msg = MessageSegment.text("你今天抽过签了，再给你看一次哦🤗\n") + MessageSegment.image(file=image_file)
   else:

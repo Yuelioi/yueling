@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sqlalchemy import Column, Integer, String
 
 from common.config import config
@@ -19,9 +17,9 @@ class GFM(DBManagerBase):
       Column("file_name", String(128), nullable=False),
       Column("busid", Integer, nullable=False),
       Column("file_size", Integer),
-      Column("upload_time", Integer, default=datetime.utcnow),
+      Column("upload_time", Integer),
       Column("dead_time", Integer),
-      Column("modify_time", Integer, default=datetime.utcnow),
+      Column("modify_time", Integer),
       Column("download_times", Integer),
       Column("uploader", Integer),
       Column("uploader_name", String(128)),

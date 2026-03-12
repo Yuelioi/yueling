@@ -89,6 +89,9 @@ data_paths = {
 }
 
 
+# 全局代理，格式: "http://127.0.0.1:7890" 或 "socks5://127.0.0.1:7890"，留空则不使用
+proxy: str = os.getenv("PROXY") or ""
+
 config = Config(
   resource=Resource(**{key: YUELING_DATA_FOLDER / path for key, path in resource_paths.items()}),
 )

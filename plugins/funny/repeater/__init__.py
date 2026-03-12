@@ -66,7 +66,7 @@ async def repeater_handler(
 
   if message_times.get(gid) == shortest_times:
     await repeater.finish(message)
-  elif message_times.get(gid, 1) > shortest_times and gid in banlist:
+  elif message_times.get(gid, 1) > shortest_times and int(gid) in banlist:
     ranges = [
       (1, 5, 5),
       (6, 15, 20),
@@ -83,7 +83,7 @@ async def repeater_handler(
     random_num = random.randint(random_range[0], random_range[1])
     chosen_range_index = ranges.index(random_range)
 
-    if uid in whitelist:
+    if int(uid) in whitelist:
       return
 
     if await User_admin_validate(botv11, eventV11):
