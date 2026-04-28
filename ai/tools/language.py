@@ -7,9 +7,9 @@ from services.translate import translate as svc_translate
 
 @ai_tool(
   description="翻译文本到目标语言（默认中文）",
-  triggers=["翻译", "translate"],
+  triggers=["翻译"],
   patterns=[r"把.+翻译成", r"译成.+"],
-  semantic_slots=["翻译", "语言转换", "中英互译", "译成"],
+  semantic_slots=["translate", "语言转换", "中英互译", "翻成中文", "怎么用英语说"],
   tags=["language"],
   examples=["翻译 hello", "把这段译成英文", "翻译成日语：今天天气真好"],
 )
