@@ -1,11 +1,13 @@
-from services import tran_deepl_pro
+"""翻译命令 — 协议薄壳，业务在 services.translate"""
+
 from nonebot import on_command
 from nonebot.params import RawCommand
-from core.deps import Args
-from core.context import ToolContext
-
-
 from nonebot.plugin import PluginMetadata
+
+from core.context import ToolContext
+from core.deps import Args
+from core.handler import register_handler
+from services.translate import translate as svc_translate
 
 __plugin_meta__ = PluginMetadata(
   name="翻译",
@@ -32,21 +34,35 @@ __plugin_meta__ = PluginMetadata(
 translator = on_command("翻译", aliases={"中译英", "中译日", "英译中", "英译日", "日译英", "日译中"})
 
 
-@translator.handle()
-async def translate(cmd=RawCommand(), args: list[str] = Args()):
+async def _handle(cmd: str = RawCommand(), args: list[str] = Args(0, 999)):
   if not args:
     return "请输入需要翻译的内容"
+
+  # 别名 (中译英/日译中 等) 通过命令后缀决定目标语言；裸 "翻译" 命令支持
+  # 第一个参数为 2-5 字符的纯字母语言代码
   if cmd.endswith("译英"):
-    target_lang = "en-US"
+    target = "en"
   elif cmd.endswith("译日"):
-    target_lang = "ja"
+    target = "ja"
+  elif cmd.endswith("译中"):
+    target = "zh"
   else:
-    target_lang = "zh"
-  res = tran_deepl_pro(" ".join(args), target_lang=target_lang)
-  await translator.finish(res)
+    target = "zh"
+    if args and len(args[0]) <= 5 and args[0].isalpha():
+      target = args[0].lower()
+      args = args[1:]
+
+  text = " ".join(args).strip()
+  if not text:
+    return "请输入需要翻译的内容"
+
+  return await svc_translate(text, target=target)
+
+
+register_handler(translator, _handle)
 
 
 async def translate_tool_handler(ctx: ToolContext, text: str, target_lang: str = "zh") -> str:
   """AI 工具调用入口"""
-  result = tran_deepl_pro(text, target_lang=target_lang)
+  result = await svc_translate(text, target=target_lang)
   return result or "翻译失败"
