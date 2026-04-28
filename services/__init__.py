@@ -1,3 +1,5 @@
+"""业务逻辑层。不依赖 nonebot / ai / plugins。"""
+
 import datetime
 import random
 import string
