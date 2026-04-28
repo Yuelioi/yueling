@@ -17,6 +17,7 @@ class ToolMeta:
   risk_level: str = "low"
   confirm_required: bool = False
   func: Callable | None = None
+  plugin_name: str = ""
 
   def to_openai_schema(self) -> dict:
     return {

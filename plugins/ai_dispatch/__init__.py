@@ -10,6 +10,7 @@ from nonebot.rule import to_me
 
 from ai.dispatcher import dispatch
 from ai.guard import guard_check
+from ai.proactive import proactive_manager
 from ai.scanner import scan_plugins_for_tools
 from ai.trace import start_trace
 from core.context import ToolContext
@@ -66,6 +67,8 @@ async def handle_ai(bot: Bot, event: GroupMessageEvent):
     bot=bot,
     event=event,
   )
+
+  proactive_manager.on_bot_replied(event.group_id)
 
   try:
     result = await dispatch(text, ctx)

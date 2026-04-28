@@ -4,6 +4,7 @@ import io
 
 from ai.registry import tool
 from ai.session import session_manager
+from ai.tools.analysis import _parse_qq_messages
 from core.context import ToolContext
 from services.qq_api import download_avatar
 
@@ -27,20 +28,7 @@ async def get_chat_history(ctx: ToolContext, count: int = 15) -> str:
     messages = history.get("messages", []) if history else []
     if not messages:
       return "无记录"
-    lines = []
-    for msg in messages[-count:]:
-      uid = msg.get("user_id", 0)
-      nick = msg.get("sender", {}).get("card") or msg.get("sender", {}).get("nickname", "?")
-      parts = []
-      for seg in msg.get("message", []):
-        if seg["type"] == "text" and seg["data"].get("text", "").strip():
-          parts.append(seg["data"]["text"].strip())
-        elif seg["type"] == "image":
-          parts.append("[图片]")
-        elif seg["type"] == "at":
-          parts.append(f"[@{seg['data'].get('qq')}]")
-      if parts:
-        lines.append(f"{nick}({uid}): {' '.join(parts)}")
+    lines = _parse_qq_messages(messages[-count:], include_uid=True)
     return "\n".join(lines)
   except Exception as e:
     return f"获取失败: {e}"

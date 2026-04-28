@@ -28,8 +28,9 @@ dependencies = [
   "openai>=1.0.0",
   "deepl>=1.20.0,<2.0.0",
 
-  # 图像处理
+  # 图像处理 / OCR
   "Pillow",
+  "rapidocr-onnxruntime>=1.4.0",
 
   # 网页解析
   "beautifulsoup4>=4.12.3,<5.0.0",

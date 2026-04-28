@@ -1,5 +1,6 @@
-"""三层记忆系统 — Semantic(事实偏好) + Episodic(交互模式) + Procedural(群规则)"""
+"""三层记忆系统 — Semantic(事实偏好) + Episodic(交互模式) + Procedural(群规则) + LLM智能提取"""
 
+import json
 import time
 from dataclasses import dataclass, field
 
@@ -265,6 +266,59 @@ class MemoryManager:
         {"id": row.id, "rule": row.rule, "created_by": row.created_by}
         for row in result.scalars()
       ]
+
+  async def extract_memories(
+    self, user_text: str, bot_reply: str, existing: list[dict],
+  ) -> list[dict]:
+    from ai.llm import DEFAULT_MODEL, get_llm_client
+
+    existing_str = "、".join(m["content"] for m in existing[:10]) if existing else "无"
+    prompt = (
+      "从以下对话中提取用户的偏好、事实或重要信息。\n"
+      f"已有记忆: {existing_str}\n"
+      "规则:\n"
+      "- 只提取用户明确表达或强烈暗示的信息\n"
+      "- 不要重复已有记忆中已包含的内容\n"
+      "- 如果没有值得记忆的内容，返回空数组 []\n"
+      "- 返回 JSON 数组，每项: {\"content\": \"简短描述\", \"category\": \"分类\"}\n"
+      "- 分类可选: general/food/location/hobby/work/preference/identity\n"
+      f"\n用户: {user_text}\n助手: {bot_reply}"
+    )
+
+    try:
+      resp = await get_llm_client().chat.completions.create(
+        model=DEFAULT_MODEL,
+        messages=[
+          {"role": "system", "content": "你是记忆提取器。只输出JSON数组，不要输出其他内容。"},
+          {"role": "user", "content": prompt},
+        ],
+        temperature=0.1,
+        max_tokens=200,
+      )
+      raw = resp.choices[0].message.content or "[]"
+      raw = raw.strip()
+      if raw.startswith("```"):
+        raw = raw.split("\n", 1)[-1].rsplit("```", 1)[0]
+      items = json.loads(raw)
+      if not isinstance(items, list):
+        return []
+      return [
+        {"content": it["content"], "category": it.get("category", "general")}
+        for it in items
+        if isinstance(it, dict) and "content" in it
+      ]
+    except Exception as e:
+      logger.debug(f"Memory extraction failed: {e}")
+      return []
+
+  async def smart_write_semantic(self, user_id: int, user_text: str, bot_reply: str):
+    existing = await self.recall_semantic(user_id, limit=20)
+    items = await self.extract_memories(user_text, bot_reply, existing)
+    existing_contents = {m["content"] for m in existing}
+    for item in items:
+      if item["content"] in existing_contents:
+        continue
+      await self.write_semantic(user_id, item["content"], item["category"])
 
 
 memory_manager = MemoryManager()

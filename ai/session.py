@@ -1,4 +1,4 @@
-"""多轮会话管理 — 双层上下文隔离 + 弱引用 + TTL + 可选持久化"""
+"""多轮会话管理 — 双层上下文隔离 + 弱引用 + TTL + 上下文压缩 + 可选持久化"""
 
 import json
 import time
@@ -7,8 +7,9 @@ from pathlib import Path
 
 from nonebot import logger
 
-
 SESSION_PERSIST_PATH = Path("data/sessions")
+MAX_CONTEXT_TOKENS = 2000
+KEEP_RECENT = 4
 
 
 @dataclass
@@ -57,6 +58,46 @@ class Session:
 
   def get_context_messages(self) -> list[dict]:
     return [m for m in self.messages if m["role"] in ("user", "assistant")]
+
+  @staticmethod
+  def estimate_tokens(messages: list[dict]) -> int:
+    return sum(len(m.get("content", "")) // 2 + 4 for m in messages)
+
+  async def get_compressed_context(self) -> list[dict]:
+    ctx_msgs = self.get_context_messages()
+    if not ctx_msgs or self.estimate_tokens(ctx_msgs) <= MAX_CONTEXT_TOKENS:
+      return ctx_msgs
+
+    if len(ctx_msgs) <= KEEP_RECENT:
+      return ctx_msgs
+
+    old_msgs = ctx_msgs[:-KEEP_RECENT]
+    recent_msgs = ctx_msgs[-KEEP_RECENT:]
+
+    old_text = "\n".join(
+      f"{'用户' if m['role'] == 'user' else '助手'}: {m['content']}"
+      for m in old_msgs
+    )
+
+    try:
+      from ai.llm import DEFAULT_MODEL, get_llm_client
+      resp = await get_llm_client().chat.completions.create(
+        model=DEFAULT_MODEL,
+        messages=[
+          {"role": "system", "content": "将以下对话记录压缩为简短摘要，保留关键信息、用户偏好和重要结论。100字以内。"},
+          {"role": "user", "content": old_text},
+        ],
+        temperature=0.1,
+        max_tokens=150,
+      )
+      summary = resp.choices[0].message.content or ""
+    except Exception as e:
+      logger.debug(f"Context compression failed: {e}")
+      return recent_msgs
+
+    compressed = [{"role": "system", "content": f"之前的对话摘要: {summary}"}]
+    compressed.extend(recent_msgs)
+    return compressed
 
   def to_dict(self) -> dict:
     return {

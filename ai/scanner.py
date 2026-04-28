@@ -66,6 +66,7 @@ def scan_plugins_for_tools():
         risk_level=tool_def.get("risk_level", "low"),
         confirm_required=tool_def.get("confirm_required", False),
         func=handler,
+        plugin_name=plugin.metadata.name if plugin.metadata else "",
       )
       registry.register(meta)
       logger.info(f"Registered AI tool '{meta.name}' from plugin '{plugin.name}'")

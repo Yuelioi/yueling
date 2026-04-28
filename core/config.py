@@ -58,7 +58,6 @@ class ApiConfig(BaseModel):
   youtube_api_keys: list[str] = []
   openai_keys: list[str] = []
   deepseek_base_url: str = "https://api.deepseek.com"
-  ocr_url: str = "https://api.yuelili.com/ocr/ocr"
   cdn_base_url: str = "https://cdn.yuelili.com/bot"
 
 

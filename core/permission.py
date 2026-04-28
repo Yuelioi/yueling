@@ -87,6 +87,9 @@ class PermissionManager:
       blocked.remove(plugin_name)
       self._user_blocks.set(str(user_id), blocked)
 
+  def get_user_blocked_plugins(self, user_id: int) -> list[str]:
+    return self._user_blocks.get(str(user_id), [])
+
 
 permission_manager = PermissionManager()
 

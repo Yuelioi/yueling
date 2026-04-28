@@ -151,3 +151,5 @@ NapCat.Framework
 config.toml
 .ruff_cache/
 .claude/
+
+.DS_Store

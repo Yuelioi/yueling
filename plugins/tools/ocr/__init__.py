@@ -1,13 +1,14 @@
-"""OCR 文字识别 — 核心函数 + 双入口"""
+"""OCR 文字识别 — RapidOCR 本地引擎 + 双入口"""
+
+import asyncio
 
 from nonebot import on_command
 from nonebot.plugin import PluginMetadata
+from rapidocr_onnxruntime import RapidOCR
 
 from core.deps import Arg, Img
-from core.config import config
-from core.http import get_client
-from services.external_api import fetch_image_from_url_ssl
 from core.context import ToolContext
+from services.http_fetch import fetch_image
 
 __plugin_meta__ = PluginMetadata(
   name="OCR",
@@ -32,25 +33,23 @@ __plugin_meta__ = PluginMetadata(
 
 LANG_MAP = {"中文": "chi_sim", "英文": "eng", "日语": "jpn", "日文": "jpn"}
 
-# ─── 核心函数（不依赖框架）────────────────────────────────────
+_engine = RapidOCR()
 
 
 async def do_ocr(image_url: str, language: str = "chi_sim") -> str:
-  """执行 OCR，返回识别文本"""
-  file = await fetch_image_from_url_ssl(image_url)
-  client = get_client()
-  response = await client.post(
-    config.api.ocr_url,
-    files={"file": ("image.jpg", file.getvalue(), "image/jpeg")},
-    data={"language": language},
-  )
-  if response.status_code == 200:
-    return response.json().get("data", "").strip() or "未识别出文字"
-  return "OCR 服务不可用"
+  """下载图片并执行本地 OCR"""
+  img_buf = await fetch_image(image_url)
+  img_bytes = img_buf.getvalue()
+
+  result, _ = await asyncio.to_thread(_engine, img_bytes)
+  if not result:
+    return "未识别出文字"
+
+  lines = [line[1] for line in result]
+  return "\n".join(lines).strip() or "未识别出文字"
 
 
 # ─── NoneBot 命令入口 ──────────────────────────────────────
-
 
 ocr = on_command("ocr")
 
@@ -63,7 +62,6 @@ async def _(img=Img(required=True), lang=Arg()):
 
 
 # ─── AI Tool 入口 ─────────────────────────────────────────
-
 
 async def ocr_tool_handler(ctx: ToolContext, language: str = "chi_sim") -> str:
   imgs = ctx.get_images()
