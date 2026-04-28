@@ -18,6 +18,18 @@ class ToolMeta:
   confirm_required: bool = False
   func: Callable | None = None
   plugin_name: str = ""
+  # v3 新增 (本任务)
+  triggers: list[str] = field(default_factory=list)
+  patterns: list[str] = field(default_factory=list)
+  semantic_slots: list[str] = field(default_factory=list)
+  alias: str | None = None
+  allow_partial: bool = False
+
+  @property
+  def compiled_patterns(self) -> list[re.Pattern]:
+    if not hasattr(self, "_compiled_patterns_cache"):
+      self._compiled_patterns_cache = [re.compile(p) for p in self.patterns]
+    return self._compiled_patterns_cache
 
   def to_openai_schema(self) -> dict:
     return {
@@ -127,6 +139,51 @@ def tool(
       risk_level=risk_level,
       confirm_required=confirm_required,
       func=func,
+    )
+    registry.register(meta)
+    return func
+
+  return decorator
+
+
+def ai_tool(
+  description: str | None = None,
+  tags: list[str] | None = None,
+  examples: list[str] | None = None,
+  negative_examples: list[str] | None = None,
+  triggers: list[str] | None = None,
+  patterns: list[str] | None = None,
+  semantic_slots: list[str] | None = None,
+  alias: str | None = None,
+  allow_partial: bool = False,
+  permission: str = "member",
+  risk_level: str = "low",
+  confirm_required: bool = False,
+  name: str | None = None,
+):
+  """v3 装饰器：与 @tool 共享 registry，但支持新字段。"""
+
+  def decorator(func: Callable):
+    doc = func.__doc__ or ""
+    first_line = doc.strip().split("\n")[0] if doc.strip() else func.__name__
+    parameters = _build_parameters(func)
+
+    meta = ToolMeta(
+      name=name or func.__name__,
+      description=description or first_line,
+      tags=tags or [],
+      examples=examples or [],
+      negative_examples=negative_examples or [],
+      parameters=parameters,
+      permission=permission,
+      risk_level=risk_level,
+      confirm_required=confirm_required,
+      func=func,
+      triggers=triggers or [],
+      patterns=patterns or [],
+      semantic_slots=semantic_slots or [],
+      alias=alias,
+      allow_partial=allow_partial,
     )
     registry.register(meta)
     return func
