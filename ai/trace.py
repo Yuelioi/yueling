@@ -21,6 +21,12 @@ class ToolTrace:
   result: str = ""
   total_steps: int = 0
   duration_ms: float = 0
+  # v3 新增 (本任务)
+  recall_sources: dict[str, str] = field(default_factory=dict)
+  candidates_ranked: list[tuple[str, float]] = field(default_factory=list)
+  result_status: str = "ok"  # ok / error / fallback / clarify
+  route_latency_ms: float = 0
+  llm_latency_ms: float = 0
 
 
 _trace_start: contextvars.ContextVar[float] = contextvars.ContextVar("_trace_start", default=0.0)
@@ -36,6 +42,12 @@ def record_trace(
   tool_args: dict,
   result: str,
   steps: int,
+  *,
+  recall_sources: dict[str, str] | None = None,
+  candidates_ranked: list[tuple[str, float]] | None = None,
+  result_status: str = "ok",
+  route_latency_ms: float = 0,
+  llm_latency_ms: float = 0,
 ):
   start = _trace_start.get()
   duration = (time.time() - start) * 1000 if start else 0
@@ -47,6 +59,11 @@ def record_trace(
     result=result[:200],
     total_steps=steps,
     duration_ms=round(duration, 1),
+    recall_sources=recall_sources or {},
+    candidates_ranked=candidates_ranked or [],
+    result_status=result_status,
+    route_latency_ms=round(route_latency_ms, 1),
+    llm_latency_ms=round(llm_latency_ms, 1),
   )
 
   try:
