@@ -153,3 +153,6 @@ config.toml
 .claude/
 
 .DS_Store
+
+
+docs/superpowers/
