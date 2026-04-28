@@ -39,6 +39,8 @@ _DEEPL_LANG = {
   "ru": "RU",
 }
 
+SUPPORTED_LANGS: frozenset[str] = frozenset(_DEEPL_LANG.keys())
+
 
 def tran_deepl_pro(text: str, source_lang=None, target_lang="zh"):
   """旧版同步入口 — 保留以兼容 plugins/tools/link_analysis/* 与 services/__init__ 重导出。"""

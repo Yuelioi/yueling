@@ -7,7 +7,7 @@ from nonebot.plugin import PluginMetadata
 from core.context import ToolContext
 from core.deps import Args
 from core.handler import register_handler
-from services.translate import translate as svc_translate
+from services.translate import SUPPORTED_LANGS, translate as svc_translate
 
 __plugin_meta__ = PluginMetadata(
   name="翻译",
@@ -48,7 +48,7 @@ async def _handle(cmd: str = RawCommand(), args: list[str] = Args(0, 999)):
     target = "zh"
   else:
     target = "zh"
-    if args and len(args[0]) <= 5 and args[0].isalpha():
+    if len(args) >= 2 and args[0].lower() in SUPPORTED_LANGS:
       target = args[0].lower()
       args = args[1:]
 
