@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import time
 
 from nonebot import logger
 
@@ -12,6 +13,7 @@ from ai.memory import memory_manager, should_store_episode, should_write_semanti
 from ai.prompt import build_system_message
 from ai.rate_limit import rate_limiter
 from ai.registry import ToolMeta, registry
+from ai.route import recall_source, route_candidates
 from ai.session import session_manager
 from ai.trace import record_trace
 from core import store
@@ -190,12 +192,28 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
   if not available:
     return "当前没有可用的工具"
 
+  # ─── 影子路由 (shadow mode) ─────────────────────────────────
+  # 新评分召回路由结果只写入 trace，不参与决策；决策仍走 select_candidate_tools。
+  _shadow_t0 = time.perf_counter()
+  shadow_ranked = route_candidates(text, available)
+  shadow_latency_ms = (time.perf_counter() - _shadow_t0) * 1000
+  shadow_recall_sources = {tool.name: recall_source(text, tool) for tool, _ in shadow_ranked}
+  shadow_candidates_ranked = [(t.name, round(s, 3)) for t, s in shadow_ranked]
+  llm_latency_ms_total = 0.0
+
   session = session_manager.get(ctx.group_id, ctx.user_id)
 
   # 检查是否是确认回复
   if pending := confirm_manager.try_confirm(ctx.user_id, ctx.group_id, text):
     result = await execute_tool(pending.tool_name, pending.tool_args, ctx)
-    record_trace(text, pending.tool_name, pending.tool_args, result, session.step_count)
+    record_trace(
+      text, pending.tool_name, pending.tool_args, result, session.step_count,
+      recall_sources=shadow_recall_sources,
+      candidates_ranked=shadow_candidates_ranked,
+      result_status="error" if result.startswith("ERROR:") else "ok",
+      route_latency_ms=shadow_latency_ms,
+      llm_latency_ms=llm_latency_ms_total,
+    )
     return result.replace("ERROR:", "执行失败: ") if result.startswith("ERROR:") else result
 
   session.add_user_message(text)
@@ -244,6 +262,7 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
   # ─── ReAct Loop ──────────────────────────────────────────
   for step in range(MAX_STEPS):
     try:
+      _llm_t0 = time.perf_counter()
       response = await get_llm_client().chat.completions.create(
         model=DEFAULT_MODEL,
         messages=messages,
@@ -251,6 +270,7 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
         temperature=0.3,
         max_tokens=300,
       )
+      llm_latency_ms_total += (time.perf_counter() - _llm_t0) * 1000
     except Exception as e:
       logger.error(f"AI dispatch LLM error: {e}")
       return "AI 服务暂时不可用"
@@ -263,7 +283,14 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
         # 链式调用结束，LLM 用文本总结最终结果
         reply = choice.message.content or "执行完成"
         session.add_assistant_message(reply)
-        record_trace(text, None, {}, reply, step)
+        record_trace(
+          text, None, {}, reply, step,
+          recall_sources=shadow_recall_sources,
+          candidates_ranked=shadow_candidates_ranked,
+          result_status="ok",
+          route_latency_ms=shadow_latency_ms,
+          llm_latency_ms=llm_latency_ms_total,
+        )
 
         if should_store_episode(None, step, True):
           try:
@@ -281,7 +308,14 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
       from ai.chat import chat_fallback
       reply = await chat_fallback(text, ctx.bot, ctx.event)
       session.add_assistant_message(reply)
-      record_trace(text, None, {}, reply, step)
+      record_trace(
+        text, None, {}, reply, step,
+        recall_sources=shadow_recall_sources,
+        candidates_ranked=shadow_candidates_ranked,
+        result_status="fallback",
+        route_latency_ms=shadow_latency_ms,
+        llm_latency_ms=llm_latency_ms_total,
+      )
       _fire_memory_extraction(ctx.user_id, text, reply)
       return reply
 
@@ -303,7 +337,14 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
     meta = registry.get_by_name(tool_name)
     if meta and meta.confirm_required:
       action = confirm_manager.create(ctx.user_id, ctx.group_id, tool_name, tool_args)
-      record_trace(text, tool_name, tool_args, "CONFIRM_REQUIRED", step)
+      record_trace(
+        text, tool_name, tool_args, "CONFIRM_REQUIRED", step,
+        recall_sources=shadow_recall_sources,
+        candidates_ranked=shadow_candidates_ranked,
+        result_status="clarify",
+        route_latency_ms=shadow_latency_ms,
+        llm_latency_ms=llm_latency_ms_total,
+      )
       return confirm_manager.format_confirm_message(action)
 
     # 执行工具
@@ -334,7 +375,14 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
 
     # 最后一步了，直接返回
     if step == MAX_STEPS - 1:
-      record_trace(text, tool_name, tool_args, result, step)
+      record_trace(
+        text, tool_name, tool_args, result, step,
+        recall_sources=shadow_recall_sources,
+        candidates_ranked=shadow_candidates_ranked,
+        result_status="error" if result.startswith("ERROR:") else "ok",
+        route_latency_ms=shadow_latency_ms,
+        llm_latency_ms=llm_latency_ms_total,
+      )
       session.add_assistant_message(result)
       _fire_memory_extraction(ctx.user_id, text, result)
       return result
@@ -351,7 +399,14 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
       last_result = msg.get("content", "")
       break
   if last_result:
-    record_trace(text, None, {}, last_result, MAX_STEPS)
+    record_trace(
+      text, None, {}, last_result, MAX_STEPS,
+      recall_sources=shadow_recall_sources,
+      candidates_ranked=shadow_candidates_ranked,
+      result_status="ok",
+      route_latency_ms=shadow_latency_ms,
+      llm_latency_ms=llm_latency_ms_total,
+    )
     session.add_assistant_message(last_result)
     _fire_memory_extraction(ctx.user_id, text, last_result)
 
