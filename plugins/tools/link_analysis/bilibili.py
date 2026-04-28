@@ -3,11 +3,11 @@ import re
 import urllib.parse
 from time import localtime, strftime
 
-import aiohttp
 import nonebot
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
 
-from common.utils import text_to_image
+from core.http import get_client, USER_AGENT
+from services import text_to_image
 
 analysis_stat: dict[int, str] = {}
 
@@ -22,9 +22,10 @@ async def bilibili(url):
 
 
 async def fetch_json(url):
-  headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
-  async with aiohttp.request("GET", url, headers=headers, timeout=aiohttp.client.ClientTimeout(10)) as resp:
-    return await resp.json()
+  headers = {"User-Agent": USER_AGENT}
+  client = get_client()
+  resp = await client.get(url, headers=headers, timeout=10)
+  return resp.json()
 
 
 async def bili_keyword(text: str):
@@ -74,7 +75,7 @@ def extract(text: str):
   elif epid := re.search(r"ep\d+", text, re.I):
     url = f"https://api.bilibili.com/pgc/view/web/season?ep_id={epid[0][2:]}"
   elif ssid := re.search(r"ss\d+", text, re.I):
-    url = f"https://api.bilibili.com/pgc/view/web/season?season_id=={ssid[0][2:]}"
+    url = f"https://api.bilibili.com/pgc/view/web/season?season_id={ssid[0][2:]}"
   elif mdid := re.search(r"md\d+", text, re.I):
     url = f"https://api.bilibili.com/pgc/review/user?media_id={mdid[0][2:]}"
   elif room_id := re.search(r"live.bilibili.com/(blanc/|h5/)?(\d+)", text, re.I):

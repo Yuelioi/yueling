@@ -2,14 +2,11 @@
 
 version: "3"
 
-vars:
-  GREETING: Hello, World!
-
 tasks:
-  lagrange:
-    dir: Lagrange.OneBot
+  napcat:
+    dir: NapCat.Framework
     cmds:
-      - ./Lagrange.OneBot.exe
+      - ./NapCat.Framework.exe
   nb-run:
     cmds:
-      - nb run
+      - uv run bot.py

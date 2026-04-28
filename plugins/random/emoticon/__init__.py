@@ -6,8 +6,8 @@ from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 from nonebot.matcher import Matcher
 from nonebot.plugin import PluginMetadata
 
-from common.base.Depends import Ats, Imgs
-from common.utils import get_random_images
+from core.deps import Ats, Imgs
+from services import get_random_images
 
 __plugin_meta__ = PluginMetadata(
   name="表情包",

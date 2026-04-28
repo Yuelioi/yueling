@@ -2,6 +2,8 @@ from nonebot import on_request
 from nonebot.adapters.onebot.v11 import Bot, GroupRequestEvent
 from nonebot.plugin import PluginMetadata
 
+from core.config import get_plugin_config
+
 gr = on_request()
 
 
@@ -21,22 +23,18 @@ async def _(bot: Bot, event: GroupRequestEvent):
 
   comment = comment.lower()
 
-  if event.group_id == 587443081:
-    if "月离" in comment or "b" in comment or "哔" in comment:
-      await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=True, reason=" ")
+  auto_approve = get_plugin_config("manager").get("auto_approve", {})
+  group_key = str(event.group_id)
 
-  elif event.group_id == 885816198:
-    if comment == "java":
-      await bot.bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=False, reason="答案错误")
-    if ("j" in comment and "s" in comment) or ("e" in comment and "s" in comment):
+  if group_key in auto_approve:
+    keywords = auto_approve[group_key]
+    if keywords == ["*"]:
+      if comment:
+        await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=True, reason=" ")
+        return
+    elif any(kw in comment for kw in keywords):
       await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=True, reason=" ")
-
-  elif event.group_id == 680653092:
-    if "video" in comment:
-      await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=True, reason=" ")
-  elif event.group_id == 151998078:
-    if comment != "":
-      await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=True, reason=" ")
+      return
 
   if "交流" in comment or "我是" in comment:
     await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=False, reason="机器人爬")

@@ -2,9 +2,9 @@ from nonebot import on_command
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.plugin import PluginMetadata
 
-from common.base.Depends import Arg
-from common.base.Handle import register_handler
-from common.utils import get_random_image
+from core.deps import Arg
+from core.handler import register_handler
+from services import get_random_image
 
 __plugin_meta__ = PluginMetadata(
   name="语录",

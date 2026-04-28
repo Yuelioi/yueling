@@ -1,4 +1,4 @@
-from common.utils.api import get_html, get_summary, get_title
+from services.external_api import get_html, get_summary, get_title
 
 # https://zhuanlan.zhihu.com/p/663061200
 

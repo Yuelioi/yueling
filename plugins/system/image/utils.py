@@ -1,7 +1,8 @@
 from nonebot import logger
 
-from common.database.ImageManager import calculate_hash, idb
-from common.utils import api, generate_random_code
+from core.config import config
+from services.image_db import calculate_hash, idb
+from services import api, generate_random_code
 
 
 def detect_image_type(data: bytes):
@@ -42,10 +43,12 @@ def name_gene(cmd: str = "", filename: str = "", group="", uploader=""):
     return generate_random_code()
 
 
-async def add_images(cmd: str, group_id: int, user_id: int, arg: str, imgs: list[str] = []):
+async def add_images(cmd: str, group_id: int, user_id: int, arg: str, imgs: list[str] | None = None):
+  if not imgs:
+    return "没有图片"
   msgs = ""
 
-  if cmd == "添加ba" and not user_id == 435826135:
+  if cmd == "添加ba" and user_id != config.bot.owner_id:
     return "权限不足!!"
 
   for index, img in enumerate(imgs):
@@ -68,7 +71,7 @@ async def add_images(cmd: str, group_id: int, user_id: int, arg: str, imgs: list
 async def delete_image(user_id: int, img: str):
   """删除图片 并加入回收站"""
 
-  if user_id not in [435826135, 963036493, 1239245970, 1284773289, 405850498, 21615991]:
+  if user_id not in config.permissions.image_admins:
     return "就凭你也想访问本小姐的系统!"
 
   if not img:

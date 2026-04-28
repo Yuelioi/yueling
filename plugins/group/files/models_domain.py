@@ -16,7 +16,7 @@ class QQFile(BaseModel):
     busid: int
     file_size: int
     folder_name: str = ""  # 默认为根目录
-    
+
     class Config:
         frozen = True  # 不可变，适合作为值对象
 
@@ -26,7 +26,7 @@ class QQFolder(BaseModel):
     group_id: int
     folder_name: str
     folder_id: str
-    
+
     class Config:
         frozen = True
 
@@ -36,11 +36,11 @@ class LocalFile(BaseModel):
     file_path: Path
     file_name: str
     folder_name: str = ""
-    
+
     @validator("file_path", pre=True)
     def validate_file_path(cls, v):
         return Path(v)
-    
+
     class Config:
         frozen = True
 
@@ -57,7 +57,7 @@ class FileReference(BaseModel):
     """文件引用（用于对比云端和本地）"""
     folder_name: str
     file_name: str
-    
+
     def __hash__(self):
         return hash((self.folder_name, self.file_name))
 
@@ -68,7 +68,7 @@ class TaskResult(BaseModel):
     failed_files: list[str] = Field(default_factory=list)
     duration: float = 0.0  # 秒
     error_message: Optional[str] = None
-    
+
     @property
     def is_success(self) -> bool:
         return self.error_message is None
@@ -105,7 +105,7 @@ class GroupFileSnapshot(BaseModel):
     files: list[QQFile] = Field(default_factory=list)
     folders: list[QQFolder] = Field(default_factory=list)
     timestamp: datetime = Field(default_factory=datetime.now)
-    
+
     @property
     def is_stale(self, max_age_seconds: int = 300) -> bool:
         """检查快照是否过期"""

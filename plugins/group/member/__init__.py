@@ -5,7 +5,7 @@ from nonebot import on_fullmatch
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.plugin import PluginMetadata
 
-from common.config import gv
+from core import store
 from plugins.group.member.models import MemberInfo
 
 WorkingMessage = "正在处理中/未知错误"
@@ -45,7 +45,7 @@ async def backup_members(bot: Bot, event: GroupMessageEvent):
       }
     )
 
-  gv.group_members[group_id] = members
-  gv.group_members.save()
+  store.group_members[group_id] = members
+  store.group_members.save()
 
   await member.finish("群友备份成功")

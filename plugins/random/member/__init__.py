@@ -3,8 +3,9 @@ import random
 from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, MessageSegment
 from nonebot.plugin import PluginMetadata
+from nonebot.rule import Rule
 
-from common.base.Handle import register_handler
+from core.handler import register_handler
 
 __plugin_meta__ = PluginMetadata(
   name="随机群友",
@@ -14,7 +15,11 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
-member = on_regex("抽(.*)群友(.*)|随机.*群友.*|来个.*群友.*|来点.*群友.*")
+def _not_to_me(event: GroupMessageEvent) -> bool:
+  return not event.to_me
+
+
+member = on_regex("抽(.*)群友(.*)|随机.*群友.*|来个.*群友.*|来点.*群友.*", rule=Rule(_not_to_me))
 
 
 async def random_member(bot: Bot, event: GroupMessageEvent):

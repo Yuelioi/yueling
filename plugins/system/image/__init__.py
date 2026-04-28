@@ -1,11 +1,10 @@
 from nonebot import on_command, on_fullmatch
-from nonebot.adapters import Event
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.params import RawCommand
 from nonebot.plugin import PluginMetadata
 
-from common.base.Depends import Arg, Img, Imgs
-from common.base.Handle import register_handler
+from core.deps import Arg, Img, Imgs
+from core.handler import register_handler
 from plugins.system.image.utils import (
   add_images,
   delete_image,

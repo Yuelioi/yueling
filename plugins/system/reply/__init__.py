@@ -3,9 +3,9 @@ from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.params import RawCommand
 from nonebot.plugin import PluginMetadata
 
-from common.base.Depends import Args
-from common.base.Handle import register_handler
-from common.database.ReplyManager import Reply, rpm
+from core.deps import Args
+from core.handler import register_handler
+from repositories.reply_repo import reply_repo
 
 reply_data = {}
 driver = get_driver()
@@ -13,8 +13,8 @@ driver = get_driver()
 
 @driver.on_bot_connect
 async def _():
-  logger.opt(colors=True).success('<yellow>更新回复字典成功</yellow> from <magenta>nonebot_plugin_yuelibot.plugins.reply</magenta>"')
-  update_reply()
+  await update_reply()
+  logger.info("回复字典加载完成")
 
 
 __plugin_meta__ = PluginMetadata(
@@ -34,40 +34,42 @@ reply_modify = on_command("添加回复", aliases={"删除回复", "更新回复
 async def handle_reply(event: GroupMessageEvent):
   msg = str(event.get_plaintext()).lower()
   if res := reply_data.get(msg):
-    return res.replace("回复7:", "")
+    return res
 
 
 register_handler(reply, handle_reply)
 
 
-def reply_modify_handle(event: GroupMessageEvent, args: list[str] = Args(), cmd=RawCommand()):
+async def reply_modify_handle(event: GroupMessageEvent, args: list[str] = Args(), cmd=RawCommand()):
   if cmd == "添加回复":
     content = " ".join(args[1:])
     content = content.replace("\\n", "\n")
-    rep = Reply(qq=event.user_id, keyword=args[0], reply=content, group=None)
-    if rpm.insert_data(rep):
-      update_reply()
+    if await reply_repo.add(qq=event.user_id, keyword=args[0], reply=content):
+      await update_reply()
       return "添加成功"
     return "添加失败了喵~"
   elif "删除回复" == cmd:
-    if rpm.delete_reply_data(int(args[0])):
-      update_reply()
+    if await reply_repo.delete_by_id(int(args[0])):
+      await update_reply()
       return "删除成功"
     return "删除失败"
   else:
-    update_reply()
+    await update_reply()
 
 
-def update_reply():
+async def update_reply():
   global reply_data
   reply_data.clear()
-  if sqldata := rpm.get_reply_data():
-    for data in sqldata:
-      keys = data["keyword"].split(",")
-      suffix = f"{data['group']}" if data["group"] else ""
-      for key in keys:
-        reply = data["reply"].replace("{}", key) if "{}" in data["reply"] else data["reply"]
-        reply_data[(key + suffix).lower()] = f"回复{data['id']}:{reply} "
+  all_replies = await reply_repo.get_all()
+  for data in all_replies:
+    if not data.keyword:
+      continue
+    keys = data.keyword.split(",")
+    suffix = data.group or ""
+    for key in keys:
+      reply_text = data.reply or ""
+      reply_text = reply_text.replace("{}", key) if "{}" in reply_text else reply_text
+      reply_data[(key + suffix).lower()] = reply_text
 
 
 register_handler(reply_modify, reply_modify_handle)

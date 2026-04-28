@@ -3,8 +3,9 @@ import time
 from nonebot import on_message
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 from nonebot.plugin import PluginMetadata
+from nonebot.rule import Rule
 
-from common.config import config
+from core.config import config, get_plugin_config
 
 __plugin_meta__ = PluginMetadata(
   name="recorder",
@@ -13,25 +14,28 @@ __plugin_meta__ = PluginMetadata(
   extra={"group": "娱乐", "hidden": True, "commands": []},
 )
 
-recorder = on_message()
 
-# 特定群友 -> recorder
-daxiaojie_last_time = 0
+class _State:
+  last_trigger_time: float = 0
+
+
+_state = _State()
+
+
+def _in_target_group(event: GroupMessageEvent) -> bool:
+  return event.group_id in get_plugin_config("recorder").get("target_groups", [])
+
+
+recorder = on_message(rule=Rule(_in_target_group))
 
 
 @recorder.handle()
 async def recorder_handler(event: GroupMessageEvent):
-  """特定群友图"""
-  group = [444282933, 680653092]
-
-  if event.group_id not in group:
-    return
-
-  now = time.time()
-
-  if event.user_id == 446480506:
-    global daxiaojie_last_time
-    if now - daxiaojie_last_time > 3600:
-      img = config.resource.images / "daxiaojie.gif"
-      daxiaojie_last_time = now
+  special_users = get_plugin_config("recorder").get("special_users", {})
+  user_key = str(event.user_id)
+  if user_key in special_users:
+    now = time.time()
+    if now - _state.last_trigger_time > 3600:
+      img = config.paths.images / special_users[user_key]
+      _state.last_trigger_time = now
       await recorder.finish(MessageSegment.image(img))

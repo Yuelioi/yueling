@@ -1,12 +1,12 @@
 import random
 from pathlib import Path
 
-from common.config import config
-from common.utils.draw import draw_grid
+from core.config import config
+from services.draw import draw_grid
 
 
 def get_images(folder_name: str):
-  folder = config.resource.images / folder_name
+  folder = config.paths.images / folder_name
 
   if not folder.exists():
     return "图片文件夹不存在"

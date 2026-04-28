@@ -1,6 +1,6 @@
-from common.base.Plugin import load_mods
+from core.plugin import load_mods
 
 sub_plugins = load_mods(
   "funny",
-  *["chat", "fortune", "hot", "poke", "repeater", "recorder", "jm", "sleep", "trace_moe"],
+  *["chat", "fortune", "hot", "poke", "repeater", "recorder", "sleep", "trace_moe"],
 )

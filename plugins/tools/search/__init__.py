@@ -1,47 +1,46 @@
-from nonebot import on_message
-from common.base.Depends import Args
-from plugins.tools.search.ae import search_ae_plugin
-
+from nonebot import on_command
 from nonebot.plugin import PluginMetadata
+
+from core.deps import Args
+from core.handler import register_handler
+from core.context import ToolContext
+from plugins.tools.search.ae import search_ae_plugin
 
 
 __plugin_meta__ = PluginMetadata(
   name="搜索工具",
-  description="搜索各种内容",
-  usage="""搜ae插件/百度百科/wiki [内容]""",
+  description="搜索AE插件/脚本",
+  usage="""搜ae插件 [关键词]""",
   extra={
     "group": "工具",
+    "commands": ["搜ae插件", "搜ae脚本"],
+    "tools": [{
+      "name": "search_ae",
+      "description": "搜索 After Effects 插件或脚本",
+      "tags": ["search"],
+      "examples": ["搜ae插件 Trapcode", "搜ae脚本 motion"],
+      "parameters": {
+        "keyword": {"type": "string", "description": "搜索关键词"},
+      },
+      "handler": "search_tool_handler",
+    }],
   },
 )
 
 
-search = on_message()
-
-search_types = ["ae插件", "ae脚本"]
+search = on_command("搜ae插件", aliases={"搜ae脚本"})
 
 
-def extract_search(query: str):
-  for search_type in search_types:
-    if search_type in query:
-      content = query.replace(search_type, "").strip()
-      return search_type, content
-  return None, query.strip()
-
-
-async def search_all(args=Args()):
-  msg = " ".join(args)
-
-  if not msg.startswith(("搜", "搜索")):
-    return
-
-  msgs = msg.replace("搜索", "").replace("搜", "").strip()
-
-  _type, content = extract_search(msgs)
-  if not _type:
-    return
-
+async def search_handler(args=Args()):
+  content = " ".join(args)
   if not content:
-    return "请输入搜索内容"
+    return "请输入搜索关键词"
+  return await search_ae_plugin(content)
 
-  if _type in ["ae插件", "ae脚本"]:
-    return await search_ae_plugin(content)
+
+register_handler(search, search_handler)
+
+
+async def search_tool_handler(ctx: ToolContext, keyword: str) -> str:
+  result = await search_ae_plugin(keyword)
+  return result or "未找到相关内容"

@@ -1,11 +1,11 @@
-from openai import OpenAI
+from openai import AsyncOpenAI
 
-from common.config import config
+from core.config import config
 
-client = OpenAI(api_key=config.api_cfg.deepseek_keys[0], base_url="https://api.deepseek.com")
+client = AsyncOpenAI(api_key=config.api.deepseek_keys[0], base_url=config.api.deepseek_base_url)
 
 
-def pk_generator(attacker: str, defender: str, win_rate: float, is_win: bool):
+async def pk_generator(attacker: str, defender: str, win_rate: float, is_win: bool):
   if is_win:
     winner = "玩家1"
   else:
@@ -15,7 +15,7 @@ def pk_generator(attacker: str, defender: str, win_rate: float, is_win: bool):
 玩家2: {defender}
     """
 
-  response = client.chat.completions.create(
+  response = await client.chat.completions.create(
     model="deepseek-chat",
     messages=[
       {

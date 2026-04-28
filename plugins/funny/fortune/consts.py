@@ -1,8 +1,8 @@
 import json
 
-from common.config import config
+from core.config import config
 
-__fortune_data = config.resource.fortune
+__fortune_data = config.paths.fortune
 FORTUNE_CACHE = __fortune_data / "cache"
 FORTUNE_THEMES = __fortune_data / "themes"
 FORTUNE_COPYWRITING = __fortune_data / "copywriting.json"

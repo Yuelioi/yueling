@@ -13,10 +13,10 @@ from .models_domain import QQFile, QQFolder, GroupFileSnapshot
 
 class QQFileRepository:
     """QQ文件操作仓储"""
-    
+
     def __init__(self):
         self._snapshot_cache: dict[int, GroupFileSnapshot] = {}
-    
+
     async def get_root_files(self, bot: Bot, group_id: int) -> GroupFileSnapshot:
         """
         获取群根目录文件和文件夹
@@ -26,7 +26,7 @@ class QQFileRepository:
         """
         try:
             root_data = await bot.get_group_root_files(group_id=group_id,file_count= 9999)
-          
+
             return GroupFileSnapshot(
                 group_id=group_id,
                 files=[QQFile(**f) for f in root_data.get("files", [])],
@@ -35,7 +35,7 @@ class QQFileRepository:
         except Exception as e:
             logger.error(f"获取群 {group_id} 根目录失败: {e}")
             raise
-    
+
     async def get_folder_files(
         self,
         bot: Bot,
@@ -61,23 +61,23 @@ class QQFileRepository:
                 folder_id=folder_id,
                 file_count= 9999
             )
-            
+
             files = [
                 QQFile(**f, folder_name=folder_name)
                 for f in folder_data.get("files", [])
             ]
-            
+
             folders = [
                 QQFolder(**f)
                 for f in folder_data.get("folders", [])
             ]
 
-            
+
             return files, folders
         except Exception as e:
             logger.error(f"获取文件夹 {folder_name} 内容失败: {e}")
             raise
-    
+
     async def get_all_files_recursively(
         self,
         bot: Bot,
@@ -99,14 +99,14 @@ class QQFileRepository:
         """
         all_files: list[QQFile] = []
         all_folders: list[QQFolder] = []
-        
+
         # 获取根目录
         root_snapshot = await self.get_root_files(bot, group_id)
         all_folders.extend(root_snapshot.folders)
-        
+
         if include_root:
             all_files.extend(root_snapshot.files)
-        
+
         # 递归获取所有文件夹中的文件
         if include_folders:
             queue = deque(root_snapshot.folders)
@@ -122,13 +122,13 @@ class QQFileRepository:
                 except Exception as e:
                     logger.warning(f"获取文件夹 {folder.folder_name} 失败，跳过: {e}")
                     continue
-        
+
         return GroupFileSnapshot(
             group_id=group_id,
             files=all_files,
             folders=all_folders
         )
-    
+
     async def get_file_url(self, bot: Bot, file: QQFile) -> str:
         """获取文件下载URL"""
         try:
@@ -141,7 +141,7 @@ class QQFileRepository:
         except Exception as e:
             logger.error(f"获取文件 {file.file_name} 的URL失败: {e}")
             raise
-    
+
     async def create_folder(
         self,
         bot: Bot,
@@ -162,19 +162,19 @@ class QQFileRepository:
                 parent_id=parent_folder_id
             )
             logger.info(f"文件夹 {folder_name} 创建成功")
-            
+
             # 获取新创建的文件夹信息
             root = await self.get_root_files(bot, group_id)
             for folder in root.folders:
                 if folder.folder_name == folder_name:
                     return folder
-            
+
             raise FolderOperationException(
                 folder_name, "create", "创建后未找到新文件夹"
             )
         except Exception as e:
             raise FolderOperationException(folder_name, "create", str(e))
-    
+
     async def find_folder(
         self,
         bot: Bot,
@@ -187,7 +187,7 @@ class QQFileRepository:
             if folder.folder_name == folder_name:
                 return folder
         return None
-    
+
     async def delete_file(
         self,
         bot: Bot,
@@ -206,7 +206,7 @@ class QQFileRepository:
         except Exception as e:
             logger.error(f"删除文件 {file.file_name} 失败: {e}")
             raise
-    
+
     async def move_file(
         self,
         bot: Bot,
@@ -227,7 +227,7 @@ class QQFileRepository:
         except Exception as e:
             logger.error(f"移动文件 {file.file_name} 失败: {e}")
             raise
-    
+
     async def upload_file(
         self,
         bot: Bot,

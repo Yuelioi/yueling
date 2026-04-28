@@ -1,62 +1,100 @@
+"""动漫场景识别 — 核心函数 + 双入口"""
+
 from nonebot import on_command
 from nonebot.adapters.onebot.v11 import MessageSegment
-from nonebot.params import RawCommand
 from nonebot.plugin import PluginMetadata
 
-from common.base.Depends import Img
-from common.base.Handle import register_handler
-from common.utils import api, text_to_image
-from plugins.funny.trace_moe.utils import trace_moe_util
+from core.deps import Img
+from core.handler import register_handler
+from core.http import get_proxy_client
+from services import text_to_image
+from services.external_api import fetch_image_from_url_ssl
+from core.context import ToolContext
 
 __plugin_meta__ = PluginMetadata(
-  name="图片识别",
-  description="识别图片具体场景时间, 或者查询图片角色",
-  usage="""场景识别/角色识别 + 1张图片""",
-  extra={"group": "娱乐", "commands": ["场景识别", "角色识别"]},
+  name="动漫识别",
+  description="识别图片中的动漫场景",
+  usage="""场景识别 + 图片""",
+  extra={
+    "group": "娱乐",
+    "commands": ["场景识别"],
+    "tools": [{
+      "name": "trace_anime",
+      "description": "识别图片中的动漫场景（需要附带图片）",
+      "tags": ["image"],
+      "examples": ["这是什么番", "搜番", "识别动漫"],
+      "negative_examples": ["识别图片文字"],
+      "parameters": {},
+      "handler": "trace_tool_handler",
+    }],
+  },
 )
 
 
-trace = on_command("场景识别", aliases={"角色识别"})
+# ─── 核心函数 ─────────────────────────────────────────────
 
 
-async def image_trace(cmd=RawCommand(), img=Img(required=True)):
-  img_data = await api.fetch_image_from_url_ssl(img)
+async def do_trace(image_url: str) -> list[dict] | None:
+  """调用 trace.moe API 搜索动漫场景"""
+  file = await fetch_image_from_url_ssl(image_url)
+  async with get_proxy_client() as client:
+    response = await client.post(
+      "https://api.trace.moe/search?anilistInfo",
+      content=file.getvalue(),
+      headers={"Content-Type": "image/jpeg"},
+    )
+  if response.status_code != 200:
+    return None
+  data = response.json()
+  return data.get("result", [])
 
-  if cmd == "场景识别":
-    res = await trace_moe_util(data=img_data.getvalue())
 
-    if not res:
-      return "获取数据失败"
+def format_trace_results(results: list[dict]) -> str:
+  """格式化搜索结果为文本"""
+  if not results:
+    return "未识别到动漫"
+  lines = []
+  for item in results[:3]:
+    title = item.get("anilist", {}).get("title", {}).get("native") or "未知"
+    episode = item.get("episode", "?")
+    _from = item.get("from", 0)
+    similarity = round(item.get("similarity", 0) * 100, 1)
+    lines.append(f"动漫: {title}")
+    lines.append(f"集数: EP{episode} | 时间: {_from:.0f}s | 相似度: {similarity}%")
+    lines.append("---")
+  return "\n".join(lines)
 
-    res = res.get("result")
 
-    output = []
+# ─── NoneBot 命令入口 ─────────────────────────────────────
 
-    for (
-      index,
-      item,
-    ) in enumerate(res):
-      # similarity = item["similarity"]
-      _from = item["from"]
-      title = item["anilist"]["title"]["native"]
-      episode = item["episode"]
-      # filename = item["filename"]
 
-      output.extend(
-        [
-          f"标题: {title}",
-          f"集数: {episode if episode else '无'} | 时间点: {_from}",
-          # f"文件名: {filename}",
-          # f"相似度: {similarity}",
-          "---------------------------",
-        ]
-      )
+trace = on_command("场景识别")
 
-    out_img = text_to_image(output)
-    return MessageSegment.image(file=out_img)
-  else:
-    return "接口维护中"
-    # res = await trace_character_util(data=img_data.getvalue())
+
+async def image_trace(img=Img(required=True)):
+  results = await do_trace(img)
+  if not results:
+    return "获取数据失败"
+
+  output = []
+  for item in results[:5]:
+    title = item.get("anilist", {}).get("title", {}).get("native") or "未知"
+    episode = item.get("episode", "?")
+    _from = item.get("from", 0)
+    output.extend([f"标题: {title}", f"集数: {episode} | 时间点: {_from:.0f}s", "---------------------------"])
+
+  return MessageSegment.image(file=text_to_image(output))
 
 
 register_handler(trace, image_trace)
+
+
+# ─── AI Tool 入口 ─────────────────────────────────────────
+
+
+async def trace_tool_handler(ctx: ToolContext) -> str:
+  imgs = ctx.get_images()
+  if not imgs:
+    return "请在消息中附带图片"
+  results = await do_trace(imgs[0])
+  return format_trace_results(results) if results else "搜番服务不可用"

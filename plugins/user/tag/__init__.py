@@ -5,14 +5,15 @@ from nonebot import on_command
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.params import RawCommand
 
-from common.base.Depends import Args
-from common.base.Handle import register_handler
-from common.config import config, gv
+from core.deps import Args
+from core.handler import register_handler
+from core.config import config
+from core import store
 
 tags = on_command("我的标签", aliases={"添加标签", "删除标签"})
 
 
-tag_file = config.resource.database / "user_tag.json"
+tag_file = config.paths.database / "user_tag.json"
 
 
 def split_tags(text: str) -> list:
@@ -34,7 +35,7 @@ async def tag_handle(event: GroupMessageEvent, cmd: str = RawCommand(), args_lis
   user_id = str(event.user_id)
 
   # 加载现有数据
-  current_tags = gv.user_tags.get(user_id, [])
+  current_tags = store.user_tags.get(user_id, [])
 
   if cmd == "我的标签":
     if not current_tags:
@@ -51,8 +52,8 @@ async def tag_handle(event: GroupMessageEvent, cmd: str = RawCommand(), args_lis
 
     current_tags.extend(new_tags)
     filtered_tags = list(set(current_tags))
-    gv.user_tags[user_id] = filtered_tags[:3]
-    gv.user_tags.save()
+    store.user_tags[user_id] = filtered_tags[:3]
+    store.user_tags.save()
 
     return "添加成功!"
 
@@ -67,8 +68,8 @@ async def tag_handle(event: GroupMessageEvent, cmd: str = RawCommand(), args_lis
       if tag in current_tags:
         current_tags.remove(tag)
 
-    gv.user_tags[user_id] = current_tags
-    gv.user_tags.save()
+    store.user_tags[user_id] = current_tags
+    store.user_tags.save()
 
     if not current_tags:
       return "删除成功, 当前无任何标签"

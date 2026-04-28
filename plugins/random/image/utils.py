@@ -3,11 +3,12 @@ import re
 
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 
-from common.base.Depends import Arg, Args, Img
-from common.config import config, gv
-from common.database.ImageManager import idb
-from common.utils import api
-from common.utils.rnd import get_random_image
+from core.deps import Arg, Args, Img
+from core.config import config
+from core import store
+from services.image_db import idb
+from services import api
+from services.random_image import get_random_image
 from plugins.random.image.ba import get_random_image_by_tag
 
 
@@ -107,17 +108,17 @@ async def get_moe(event: GroupMessageEvent, tags=Args(0)):
   # https://api.ixiaowai.cn/api/api.php
   # https://api.yujn.cn/
 
-  query_tags = split_tags(" ".join(tags)) or gv.user_tags.get(str(event.user_id), [])
+  query_tags = split_tags(" ".join(tags)) or store.user_tags.get(str(event.user_id), [])
   img_folder = "老婆"
 
-  if event.user_id == 435826135 and not tags:
+  if event.user_id == config.bot.owner_id and not tags:
     img_folder = "pln"
 
   if query_tags:
     imgs = idb.search_images_by_tag(img_folder, query_tags)
     if imgs:
       img = random.choice(imgs)
-      return config.resource.images / img_folder / img.filename
+      return config.paths.images / img_folder / img.filename
     # return "找不到符合您XP的图(请减少标签数量/检查标签是否正确)"
   if random_file := get_random_image(img_folder):
     return random_file

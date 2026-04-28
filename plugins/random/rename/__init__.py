@@ -1,7 +1,7 @@
 from nonebot import on_command
 from nonebot.plugin import PluginMetadata
 
-from common.base.Handle import register_handler
+from core.handler import register_handler
 from plugins.random.rename.data_source import group_change_name
 
 __plugin_meta__ = PluginMetadata(

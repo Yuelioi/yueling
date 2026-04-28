@@ -7,34 +7,34 @@ from typing import Awaitable, Callable, Optional, TypeVar, Generic
 
 from nonebot import logger
 
-from .exceptions import BackupStateException, TaskExecutionException
+from .exceptions import BackupStateException
 from .models_domain import TaskResult
 
 T = TypeVar("T", bound=TaskResult)
 
 
-class TaskExecutor(Generic[T]):  
+class TaskExecutor(Generic[T]):
     """任务执行器 - 管理任务的生命周期和状态"""
-    
+
     def __init__(self, group_id: int):
         self.group_id = group_id
         self._is_processing = False
         self._start_time: Optional[float] = None
         self._current_result: Optional[TaskResult] = None
         self._lock = asyncio.Lock()
-    
+
     @property
     def is_processing(self) -> bool:
         """是否正在处理任务"""
         return self._is_processing
-    
+
     @property
     def duration(self) -> float:
         """任务耗时（秒）"""
         if self._start_time is None:
             return 0.0
         return round(time.time() - self._start_time, 2)
-    
+
     async def acquire(self) -> None:
         """获取执行权 - 线程安全"""
         async with self._lock:
@@ -44,12 +44,12 @@ class TaskExecutor(Generic[T]):
                 )
             self._is_processing = True
             self._start_time = time.time()
-    
+
     async def release(self) -> None:
         """释放执行权"""
         async with self._lock:
             self._is_processing = False
-    
+
     async def execute(
         self,
         task_func: Callable[...,  Awaitable[T]],
@@ -71,9 +71,9 @@ class TaskExecutor(Generic[T]):
         try:
             await self.acquire()
             logger.info(f"[{self.group_id}] 开始任务: {task_name}")
-            
-            result: T = await task_func(*args, **kwargs) 
-            
+
+            result: T = await task_func(*args, **kwargs)
+
             # 更新执行时间
             result.duration = self.duration
             logger.info(
@@ -82,14 +82,14 @@ class TaskExecutor(Generic[T]):
                 f"耗时: {result.duration}s)"
             )
             return result
-            
+
         except Exception as e:
             logger.error(f"[{self.group_id}] 任务失败: {task_name}, 错误: {e}", exc_info=True)
-            raise 
-        
+            raise
+
         finally:
             await self.release()
-    
+
     async def execute_with_concurrency(
         self,
         tasks: list,
@@ -109,29 +109,29 @@ class TaskExecutor(Generic[T]):
         """
         if not tasks:
             return [], []
-        
+
         logger.info(
             f"[{self.group_id}] 开始执行 {len(tasks)} 个{task_name}，"
             f"最大并发数: {max_workers}"
         )
-        
+
         semaphore = asyncio.Semaphore(max_workers)
-        
+
         async def bounded_task(task):
             async with semaphore:
                 try:
                     return await task, None
                 except Exception as e:
                     return None, e
-        
+
         results = await asyncio.gather(
             *(bounded_task(task) for task in tasks),
             return_exceptions=False
         )
-        
+
         successes = [r[0] for r in results if r[0] is not None]
         failures = [r[1] for r in results if r[1] is not None]
-        
+
         return successes, failures
 
 

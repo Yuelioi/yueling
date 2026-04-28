@@ -2,18 +2,34 @@ import re
 from datetime import datetime, timedelta
 
 from apscheduler.job import Job
-from nonebot import get_bot, on_keyword
+from nonebot import get_bot, logger, on_keyword
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 from nonebot.plugin import PluginMetadata
 from nonebot_plugin_apscheduler import scheduler
 
-from common.base.Depends import At
+from core.deps import At
+from core.config import config
+from core.context import ToolContext
 
 __plugin_meta__ = PluginMetadata(
   name="定时提醒",
   description="提醒做什么事情",
   usage="""提醒@用户 x小时x分钟x秒后内容""",
-  extra={"group": "定时任务", "commands": ["提醒"]},
+  extra={
+    "group": "定时任务",
+    "commands": ["提醒"],
+    "tools": [{
+      "name": "set_reminder",
+      "description": "设置定时提醒",
+      "tags": ["scheduler"],
+      "examples": ["提醒我30分钟后开会", "5分钟后叫我", "1小时后提醒吃饭"],
+      "parameters": {
+        "minutes": {"type": "integer", "description": "多少分钟后提醒"},
+        "content": {"type": "string", "description": "提醒内容", "default": "时间到了"},
+      },
+      "handler": "memo_tool_handler",
+    }],
+  },
 )
 
 
@@ -44,13 +60,13 @@ async def setu_h(event: GroupMessageEvent, user=At(False)):
   if "提醒我" in origin:
     user = event.user_id
 
-  if user == 435826135:
+  if user == config.bot.owner_id:
     task_content = "爹地, " + task_content + "~"
 
   taskId = f"qq-{event.group_id}-{user}-{datetime.now().timestamp()}"
   msg = MessageSegment.at(user) + MessageSegment.text(task_content)
 
-  print(task_content)
+  logger.info(f"定时提醒: {task_content}")
 
   scheduler.add_job(
     func=reminder,
@@ -67,7 +83,7 @@ async def setu_h(event: GroupMessageEvent, user=At(False)):
 
   jobs: list[Job] = scheduler.get_jobs()
 
-  print(jobs[0].next_run_time)
+  logger.info(f"下次提醒时间: {jobs[0].next_run_time}")
 
 
 async def reminder(
@@ -96,6 +112,26 @@ def extract_time_and_content(
     total_seconds = timedelta(hours=hours, minutes=minutes, seconds=seconds).total_seconds()
 
   return total_seconds, content.strip()
+
+
+async def memo_tool_handler(ctx: ToolContext, minutes: int = 5, content: str = "时间到了") -> str:
+  if minutes < 1 or minutes > 1440:
+    return "提醒时间需要在1分钟到24小时之间"
+
+  task_id = f"ai-memo-{ctx.group_id}-{ctx.user_id}-{datetime.now().timestamp()}"
+  msg = MessageSegment.at(ctx.user_id) + MessageSegment.text(f" {content}")
+
+  async def _remind():
+    bot = get_bot()
+    await bot.send_group_msg(group_id=ctx.group_id, message=msg)
+
+  scheduler.add_job(
+    func=_remind,
+    trigger="date",
+    id=task_id,
+    next_run_time=datetime.now() + timedelta(minutes=minutes),
+  )
+  return f"已设置: {minutes}分钟后提醒「{content}」"
 
 
 def extract_user_from_content(content):

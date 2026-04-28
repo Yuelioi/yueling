@@ -1,10 +1,8 @@
-import random
-
 from nonebot import on_notice
 from nonebot.adapters.onebot.v11 import Bot, MessageSegment, PokeNotifyEvent
 from nonebot.plugin import PluginMetadata
 
-from common.utils import get_random_image
+from services import get_random_image
 
 __plugin_meta__ = PluginMetadata(
   name="戳一戳",

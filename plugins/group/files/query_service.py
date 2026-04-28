@@ -2,7 +2,6 @@ from .qq_file_repo import qq_file_repo
 from .models_domain import FileQueryInfo, QueryResult
 import re
 import unicodedata
-import json
 MAX_RESULT = 5
 
 def normalize(text: str) -> str:

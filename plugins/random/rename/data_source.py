@@ -2,15 +2,13 @@ import random
 
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 
-from common.base.Depends import Arg
-from common.base.Permission import Bot_admin_validate
-from common.config.message import BotIsNotAdmin
+from core.deps import Arg
+from core.permission import is_bot_admin
 
 
 async def group_change_name(bot: Bot, event: GroupMessageEvent, name: str = Arg()):
-  is_admin = await Bot_admin_validate(bot, event)
-  if not is_admin:
-    return BotIsNotAdmin
+  if not await is_bot_admin(bot, event):
+    return "即使是月灵也无能为力。(需要管理员权限)"
 
   el1 = [
     "废墟",

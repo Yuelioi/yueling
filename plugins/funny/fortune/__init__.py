@@ -9,7 +9,7 @@ from nonebot.log import logger
 from nonebot.plugin import PluginMetadata
 from nonebot_plugin_apscheduler import scheduler
 
-from common.base.Depends import Arg
+from core.deps import Arg
 from plugins.funny.fortune.data_source import FortuneManager, fortune_manager
 
 __plugin_meta__ = PluginMetadata(

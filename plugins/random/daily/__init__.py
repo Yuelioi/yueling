@@ -1,7 +1,7 @@
 from nonebot import on_fullmatch
 from nonebot.plugin import PluginMetadata
 
-from common.base.Handle import register_handler
+from core.handler import register_handler
 from plugins.random.daily.utils import get_drink, get_eat, get_fruit, get_game
 
 __plugin_meta__ = PluginMetadata(

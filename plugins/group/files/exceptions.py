@@ -20,8 +20,8 @@ class RecoveryException(FileManagementException):
 
 class FileDownloadException(BackupException):
     """文件下载异常"""
-    
-    def __init__(self, file_name: str, status_code: int = -1, reason: str = "unkown"):
+
+    def __init__(self, file_name: str, status_code: int = -1, reason: str = "unknown"):
         self.file_name = file_name
         self.status_code = status_code
         if status_code:
@@ -33,8 +33,8 @@ class FileDownloadException(BackupException):
 
 class FileUploadException(RecoveryException):
     """文件上传异常"""
-    
-    def __init__(self, file_name: str, reason: str = "unkown"):
+
+    def __init__(self, file_name: str, reason: str = "unknown"):
         msg = f"无法上传文件 {file_name}: {reason or '未知错误'}"
         self.file_name = file_name
         super().__init__(msg)
@@ -42,8 +42,8 @@ class FileUploadException(RecoveryException):
 
 class FolderOperationException(FileManagementException):
     """文件夹操作异常"""
-    
-    def __init__(self, folder_name: str, operation: str, reason: str = "unkown"):
+
+    def __init__(self, folder_name: str, operation: str, reason: str = "unknown"):
         msg = f"文件夹操作失败 [{operation}] {folder_name}: {reason or '未知错误'}"
         self.folder_name = folder_name
         super().__init__(msg)

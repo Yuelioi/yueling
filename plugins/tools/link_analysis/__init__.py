@@ -4,6 +4,7 @@ from nonebot import logger, on_message
 from nonebot.adapters import Bot
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.plugin import PluginMetadata
+from nonebot.rule import Rule
 
 from plugins.tools.link_analysis.behance import behance
 from plugins.tools.link_analysis.bilibili import bilibili
@@ -22,43 +23,45 @@ __plugin_meta__ = PluginMetadata(
   },
 )
 
+URL_PATTERNS = [
+  (r"(blog.csdn.net)", csdn),
+  (r"(zhuanlan.zhihu.com\/p)", zhihuzhuanlan),
+  (r"(weibo.com)|(weibo.cn)", weibo),
+  (r"(youtube.com)", youtube),
+  (r"(x.com)", twitter),
+  (r"(behance.net/gallery/.+)", behance),
+  (
+    r"(b23.tv)|(bili(22|23|33|2233).cn)|(.bilibili.com)|(^(av|cv)(\\d+))|(^BV([a-zA-Z0-9]{10})+)|(\\[\\[QQ小程序\\]哔哩哔哩\\])|(QQ小程序&amp;#93;哔哩哔哩)|(QQ小程序&#93;哔哩哔哩)",
+    bilibili,
+  ),
+]
 
-last_url = ""
 
-link_analysis = on_message()
+class _State:
+  last_url: str = ""
+
+
+_state = _State()
+
+
+def _has_url(event: GroupMessageEvent) -> bool:
+  text = event.get_plaintext()
+  return any(re.search(pat, text) for pat, _ in URL_PATTERNS)
+
+
+link_analysis = on_message(rule=Rule(_has_url))
 
 
 @link_analysis.handle()
-async def link_handler(
-  event: GroupMessageEvent,
-  bot: Bot,
-):
-  global last_url
+async def link_handler(event: GroupMessageEvent, bot: Bot):
   url = event.get_plaintext()
 
-  if url == last_url:
+  if url == _state.last_url:
     return
-  last_url = url
+  _state.last_url = url
 
-  url_handlers = [
-    (r"(blog.csdn.net)", csdn),
-    # (r"(music.163.com)", music163),
-    # (r"(mp.weixin.qq)", wechat),
-    (r"(zhuanlan.zhihu.com\/p)", zhihuzhuanlan),
-    (r"(weibo.com)|(weibo.cn)", weibo),
-    (r"(youtube.com)", youtube),
-    (r"(x.com)", twitter),
-    (r"(behance.net/gallery/.+)", behance),
-    # (r"(github.com)", github),
-    (
-      r"(b23.tv)|(bili(22|23|33|2233).cn)|(.bilibili.com)|(^(av|cv)(\\d+))|(^BV([a-zA-Z0-9]{10})+)|(\\[\\[QQ小程序\\]哔哩哔哩\\])|(QQ小程序&amp;#93;哔哩哔哩)|(QQ小程序&#93;哔哩哔哩)",
-      bilibili,
-    ),
-  ]
-
-  for pattern, handler in url_handlers:
-    match = re.search(pattern, url)
-    if match:
+  for pattern, handler in URL_PATTERNS:
+    if re.search(pattern, url):
       logger.info(f"链接解析:{url}")
       if "x.com" in pattern:
         res = await handler(bot, event, url)

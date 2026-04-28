@@ -1,28 +1,75 @@
 [project]
-name = "demo"
-version = "0.1.0"
-description = "demo"
+name = "yueling"
+version = "0.2.0"
+description = "月灵 QQ 机器人 - NoneBot2 + OneBot V11"
 readme = "README.md"
-requires-python = ">=3.10, <4.0"
+requires-python = ">=3.13"
 dependencies = [
-    "asyncpg>=0.30.0",
-    "httpx==0.27",
-    "tortoise-orm>=0.25.0",
+  # NoneBot 核心
+  "nonebot2[fastapi]>=2.4.0,<3.0.0",
+  "nonebot-adapter-onebot>=2.4.6,<3.0.0",
+  "nb-cli>=1.4.2,<2.0.0",
+
+  # NoneBot 插件
+  "nonebot_plugin_apscheduler>=0.5.0,<1.0.0",
+  "nonebot_plugin_memes>=0.6.2,<1.0.0",
+  "nonebot_plugin_waiter>=0.8.0",
+  "nonebot_plugin_userinfo",
+  "nonebot_plugin_alconna",
+
+  # 数据库
+  "sqlalchemy[asyncio]>=2.0.36,<3.0.0",
+  "aiosqlite>=0.20.0",
+
+  # HTTP
+  "httpx>=0.27,<1.0.0",
+
+  # AI / 翻译
+  "openai>=1.0.0",
+  "deepl>=1.20.0,<2.0.0",
+
+  # 图像处理
+  "Pillow",
+
+  # 网页解析
+  "beautifulsoup4>=4.12.3,<5.0.0",
+
+  # 文件
+  "aiofiles>=24.1.0,<25.0.0",
+
+  # 数据
+  "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "ruff>=0.8.3,<1.0.0",
+  "pytest>=8.3.4,<9.0.0",
+  "pytest-asyncio>=0.25.0,<1.0.0",
+  "pyright>=1.1.380",
 ]
 
 [tool.nonebot]
 adapters = [
   { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
 ]
-plugins = [ "nonebot_plugin_memes","nonebot_plugin_alconna", "plugins.funny","plugins.group","plugins.random","plugins.scheduler","plugins.system","plugins.tools","plugins.game","plugins.user"]
-
-
+plugins = [
+  "nonebot_plugin_memes",
+  "nonebot_plugin_alconna",
+  "plugins.funny",
+  "plugins.group",
+  "plugins.random",
+  "plugins.scheduler",
+  "plugins.system",
+  "plugins.tools",
+  "plugins.game",
+  "plugins.user",
+]
 
 [tool.ruff]
 line-length = 150
-target-version = "py311"
+target-version = "py313"
 indent-width = 2
-
 
 [tool.ruff.lint]
 select = [
@@ -48,7 +95,6 @@ ignore = [
   "RUF002", # ambiguous-unicode-character-docstring
   "RUF003", # ambiguous-unicode-character-comment
   "TID252",
-
 ]
 
 [tool.ruff.format]
@@ -60,7 +106,6 @@ convention = "google"
 [tool.ruff.lint.isort]
 extra-standard-library = ["typing_extensions"]
 
-
 [tool.ruff.lint.flake8-pytest-style]
 fixture-parentheses = false
 mark-parentheses = false
@@ -68,6 +113,12 @@ mark-parentheses = false
 [tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true
 
-
 [tool.pytest.ini_options]
 asyncio_mode = "strict"
+
+[tool.pyright]
+pythonVersion = "3.13"
+typeCheckingMode = "basic"
+venvPath = "."
+venv = ".venv"
+exclude = ["**/NapCat*", "**/__pycache__"]

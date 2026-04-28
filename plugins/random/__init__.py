@@ -1,6 +1,6 @@
 from nonebot.plugin import PluginMetadata
 
-from common.base.Plugin import load_mods
+from core.plugin import load_mods
 
 __plugin_meta__ = PluginMetadata(
   name="yueling",

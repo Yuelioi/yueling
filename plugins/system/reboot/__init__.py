@@ -2,9 +2,10 @@ import asyncio
 import subprocess
 
 from nonebot import logger, on_command
+from nonebot.permission import SUPERUSER
 from nonebot.plugin import PluginMetadata
 
-from common.base.Depends import Arg
+from core.deps import Arg
 
 __plugin_meta__ = PluginMetadata(
   name="重启服务",
@@ -15,7 +16,7 @@ __plugin_meta__ = PluginMetadata(
     "hidden": True,
   },
 )
-reboot = on_command("重启")
+reboot = on_command("重启", permission=SUPERUSER)
 
 
 @reboot.handle()

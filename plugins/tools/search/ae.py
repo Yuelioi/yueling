@@ -4,7 +4,7 @@ from typing import cast
 
 from bs4 import BeautifulSoup, Tag
 
-from common.utils.api import fetch_text_from_url
+from services.external_api import fetch_text_from_url
 
 
 async def get_download_link(url):

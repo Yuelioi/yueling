@@ -4,8 +4,7 @@ from nonebot import on_fullmatch
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.plugin import PluginMetadata
 
-from common.base.Permission import Bot_admin_validate, User_admin_validate
-from common.base.utils import get_user_info
+from core.permission import is_bot_admin, is_admin
 
 __plugin_meta__ = PluginMetadata(
   name="我要睡觉",
@@ -31,9 +30,9 @@ async def sleep_handle(bot: Bot, event: GroupMessageEvent):
   sleep_time = random.randint(5, 8)
   sleep_word = sleep_words[random.randint(0, len(sleep_words) - 1)]
 
-  userinfo = await get_user_info(bot, event)
+  userinfo = await bot.get_group_member_info(group_id=event.group_id, user_id=event.user_id)
 
-  if await Bot_admin_validate(bot, event) and not await User_admin_validate(bot, event):
+  if await is_bot_admin(bot, event) and not await is_admin(bot, event):
     await bot.set_group_ban(
       group_id=event.group_id,
       user_id=event.user_id,

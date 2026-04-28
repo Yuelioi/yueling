@@ -2,10 +2,10 @@ from nonebot import on_command
 from nonebot.adapters.onebot.v11 import MessageSegment
 from nonebot.plugin import PluginMetadata
 
-from common.base.Depends import Arg
-from common.base.Handle import register_handler
-from common.config import config
-from common.utils.content_convert import text_to_image
+from core.deps import Arg
+from core.handler import register_handler
+from core.config import config
+from services.text_render import text_to_image
 from plugins.system.plugin.manager import hm
 
 __plugin_meta__ = PluginMetadata(
@@ -26,7 +26,7 @@ async def hp(commond: str = Arg()):
   if commond:
     return hm.search(commond)
 
-  help_img_path = config.resource.tmp / "help.jpg"
+  help_img_path = config.paths.tmp / "help.jpg"
 
   if not help_img_path.exists():
     help_img_path.write_bytes(text_to_image(hm.all_help()).getvalue())

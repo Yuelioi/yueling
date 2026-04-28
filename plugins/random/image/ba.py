@@ -1,13 +1,10 @@
 from collections import OrderedDict
 
-# 最大存储容量
+from core.http import get_proxy_client
+from repositories.pixiv_repo import pixiv_repo
+
 MAX_CAPACITY = 200
 image_dict = OrderedDict()
-
-import aiohttp
-from tortoise.expressions import RawSQL
-
-from common.models.ba import Image
 
 roles = {
   "阿罗娜": "アロナ(ブルーアーカイブ)",
@@ -46,20 +43,19 @@ roles = {
 
 
 async def get_random_image_by_tag(tag: str):
-  filters = {"score": 100}
-
+  tag_jp = None
   if tag:
     tag_jp = roles.get(tag)
     if isinstance(tag_jp, list):
       tag_jp = tag_jp[0]
-    if tag_jp:
-      filters["tags__contains"] = [tag_jp]  # type: ignore
 
-  images = await Image.filter(**filters).annotate(random_order=RawSQL("random()")).order_by("random_order").limit(1)
+  images = await pixiv_repo.get_random_by_score(min_score=100, tag_jp=tag_jp or None)
 
   if images:
     img = images[0]
-    image_bytes = await fetch_image(img.urls["regular"])
+    urls = img.urls or {}
+    image_url = urls.get("regular") or img.url
+    image_bytes = await fetch_image(image_url)
     image_hash = hash(image_bytes)
 
     if len(image_dict) >= MAX_CAPACITY:
@@ -76,15 +72,8 @@ async def set_score(image_hash: str, score: int):
   img_id = image_dict.get(image_hash)
   if not img_id:
     return
-  image = await Image.get(id=img_id)
   score = max(min(score, 100), -100)
-
-  if image:
-    image.score = score
-    await image.save()
-
-    return True
-  return False
+  return await pixiv_repo.update_score(img_id, score)
 
 
 async def fetch_image(url: str):
@@ -93,15 +82,8 @@ async def fetch_image(url: str):
     "Referer": "https://www.pixiv.net/",
   }
 
-  proxy = "http://127.0.0.1:10808"
-
-  try:
-    async with aiohttp.ClientSession() as session:
-      async with session.get(url, headers=headers, proxy=proxy) as response:
-        if response.status != 200:
-          raise Exception(f"Failed to fetch image, status: {response.status}")
-
-        image_bytes = await response.read()
-        return image_bytes
-  except Exception as e:
-    raise Exception(f"Error fetching image: {e}")
+  async with get_proxy_client() as client:
+    response = await client.get(url, headers=headers)
+    if response.status_code != 200:
+      raise Exception(f"Failed to fetch image, status: {response.status_code}")
+    return response.content

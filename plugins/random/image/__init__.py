@@ -1,7 +1,7 @@
 from nonebot import on_command, on_fullmatch
 from nonebot.plugin import PluginMetadata
 
-from common.base.Handle import register_handler
+from core.handler import register_handler
 from plugins.random.image.utils import get_ba, get_cat, get_dragon, get_furi, get_laogong, get_mei, get_moe, get_shadiao, get_tags, get_zayu, search_tags
 
 __plugin_meta__ = PluginMetadata(

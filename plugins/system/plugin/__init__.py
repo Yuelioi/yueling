@@ -6,9 +6,9 @@ from nonebot.message import run_preprocessor
 from nonebot.params import RawCommand
 from nonebot.plugin import PluginMetadata
 
-from common.base.Depends import Args
-from common.base.Handle import register_handler
-from common.config import gv
+from core.deps import Args
+from core.handler import register_handler
+from core import store
 from plugins.system.plugin.manager import hm
 
 __plugin_meta__ = PluginMetadata(
@@ -22,7 +22,7 @@ manager = on_command("禁用插件", aliases={"启用插件", "查看禁用"})
 
 @run_preprocessor
 async def block_plugin(matcher: Matcher, event: GroupMessageEvent):
-  ban = gv.group_black_list.get(event.group_id, [])
+  ban = store.group_blacklist.get(event.group_id, [])
   if (plugin := matcher.plugin) and (meta := plugin.metadata) and meta.name in ban:
     raise IgnoredException("")
 
@@ -30,7 +30,7 @@ async def block_plugin(matcher: Matcher, event: GroupMessageEvent):
 async def manager_handler(event: GroupMessageEvent, cmd=RawCommand(), args: list[str] = Args(0, 999)):
   # 查看禁用
   if cmd == "查看禁用":
-    if ban := gv.group_black_list.get(event.group_id, []):
+    if ban := store.group_blacklist.get(event.group_id, []):
       return "已禁用的插件为" + " ".join(map(str, ban))
     else:
       return "当前没有禁用任何插件"
@@ -50,7 +50,7 @@ async def manager_handler(event: GroupMessageEvent, cmd=RawCommand(), args: list
 
   msg = "已启用:" if cmd == "启用插件" else "已禁用:"
   # 修改禁用列表
-  ban = gv.group_black_list.get(event.group_id, [])
+  ban = store.group_blacklist.get(event.group_id, [])
 
   for addon in addons:
     if addon in ban:
@@ -64,8 +64,8 @@ async def manager_handler(event: GroupMessageEvent, cmd=RawCommand(), args: list
 
     msg += addon + " "
 
-  gv.group_black_list[event.group_id] = ban
-  gv.group_black_list.save()
+  store.group_blacklist[event.group_id] = ban
+  store.group_blacklist.save()
 
   # 返回结果
   return msg

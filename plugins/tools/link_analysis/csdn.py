@@ -1,4 +1,4 @@
-from common.utils.api import get_html, get_summary, get_title
+from services.external_api import get_html, get_summary, get_title
 
 # https://blog.csdn.net/2401_84140023/article/details/138258873
 
