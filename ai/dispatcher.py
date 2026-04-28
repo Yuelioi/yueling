@@ -273,6 +273,14 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
       llm_latency_ms_total += (time.perf_counter() - _llm_t0) * 1000
     except Exception as e:
       logger.error(f"AI dispatch LLM error: {e}")
+      record_trace(
+        text, None, {}, f"LLM error: {e}", step,
+        recall_sources=shadow_recall_sources,
+        candidates_ranked=shadow_candidates_ranked,
+        result_status="error",
+        route_latency_ms=shadow_latency_ms,
+        llm_latency_ms=llm_latency_ms_total,
+      )
       return "AI 服务暂时不可用"
 
     choice = response.choices[0]
@@ -403,7 +411,7 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
       text, None, {}, last_result, MAX_STEPS,
       recall_sources=shadow_recall_sources,
       candidates_ranked=shadow_candidates_ranked,
-      result_status="ok",
+      result_status="fallback",
       route_latency_ms=shadow_latency_ms,
       llm_latency_ms=llm_latency_ms_total,
     )
