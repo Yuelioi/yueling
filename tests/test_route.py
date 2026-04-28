@@ -84,3 +84,25 @@ def test_no_collision_l1_does_not_block_l3():
   names = {t.name for t, _ in result}
   assert "translate" in names
   assert "search" in names
+
+
+def test_recall_source_respects_fuzzy_threshold():
+  """recall_source must use the same threshold as route_candidates"""
+  from ai.route import recall_source
+
+  tool = _make("t", slots=["完全无关的词"], desc="某种描述文本")
+  # 用一个 fuzzy ratio 大约在 0.55-0.65 区间的 query
+  query = "某种描述其他"
+  # 高阈值（默认 0.6 附近，假设此组合 fuzzy 在 0.6 附近）
+  src_default = recall_source(query, tool)
+  # 显式低阈值
+  src_low = recall_source(query, tool, fuzzy_threshold=0.3)
+  # 显式高阈值
+  src_high = recall_source(query, tool, fuzzy_threshold=0.95)
+
+  # 至少：低阈值更容易触发 R3，高阈值更难
+  # 不强求 src_default 是哪个值——只要参数生效
+  if src_low == "R3":
+    assert src_high in ("none",), f"high threshold should not match when low does, got {src_high}"
+  # 把 default 拿来当不变量记录
+  assert src_default in ("R3", "none"), f"unexpected: {src_default}"

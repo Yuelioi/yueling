@@ -67,12 +67,12 @@ def route_candidates(
   return ranked[:max_candidates]
 
 
-def recall_source(query: str, tool: ToolMeta) -> str:
+def recall_source(query: str, tool: ToolMeta, *, fuzzy_threshold: float = DEFAULT_FUZZY_THRESHOLD) -> str:
   """返回工具被召回的最高分来源，用于观测 (R1/R2/R3/none)。"""
   if any(kw and kw in query for kw in tool.triggers):
     return "R1"
   if any(p.search(query) for p in tool.compiled_patterns):
     return "R2"
-  if _fuzzy_score(query, tool) >= DEFAULT_FUZZY_THRESHOLD:
+  if _fuzzy_score(query, tool) >= fuzzy_threshold:
     return "R3"
   return "none"
