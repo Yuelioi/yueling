@@ -2,14 +2,18 @@
 
 from urllib.parse import quote_plus
 
-from ai.registry import tool
+from ai.registry import ai_tool
 from core.context import ToolContext
 from core.http import get_client, get_proxy_client
 
 
-@tool(
+@ai_tool(
+  description="联网搜索，返回摘要结果",
   tags=["search", "web"],
   examples=["帮我搜一下xxx", "搜索最新的xxx新闻", "查一下xxx是什么意思"],
+  triggers=["搜", "搜索"],
+  patterns=[r"帮我搜.+", r"查一下.+"],
+  semantic_slots=["联网搜索", "搜一下", "查询"],
 )
 async def web_search(ctx: ToolContext, query: str) -> str:
   """联网搜索，返回摘要结果
@@ -46,9 +50,12 @@ async def web_search(ctx: ToolContext, query: str) -> str:
     return f"搜索失败: {e}"
 
 
-@tool(
+@ai_tool(
+  description="查询城市天气",
   tags=["info", "web"],
   examples=["今天天气怎么样", "北京明天天气", "上海这周天气预报"],
+  triggers=["天气", "气温"],
+  semantic_slots=["天气预报", "下雨", "温度"],
 )
 async def get_weather(ctx: ToolContext, city: str = "") -> str:
   """查询城市天气
@@ -98,9 +105,13 @@ async def get_weather(ctx: ToolContext, city: str = "") -> str:
     return f"天气查询失败: {e}"
 
 
-@tool(
+@ai_tool(
+  description="查询机票/航班信息",
   tags=["search", "travel"],
   examples=["北京到上海的机票", "查一下明天飞广州的航班", "机票查询"],
+  triggers=["机票", "航班"],
+  patterns=[r".+到.+机票"],
+  semantic_slots=["飞机票", "航班查询"],
 )
 async def search_flights(ctx: ToolContext, departure: str, arrival: str, date: str = "") -> str:
   """查询机票/航班信息
@@ -114,9 +125,13 @@ async def search_flights(ctx: ToolContext, departure: str, arrival: str, date: s
   return await web_search(ctx, query)
 
 
-@tool(
+@ai_tool(
+  description="查询火车票/高铁票信息",
   tags=["search", "travel"],
   examples=["北京到上海的火车票", "查一下高铁票", "明天去南京的车票"],
+  triggers=["火车", "高铁", "车票"],
+  patterns=[r".+到.+火车", r".+到.+高铁"],
+  semantic_slots=["火车票", "高铁票"],
 )
 async def search_trains(ctx: ToolContext, departure: str, arrival: str, date: str = "") -> str:
   """查询火车票/高铁票信息

@@ -1,14 +1,17 @@
 """AI 内置工具 — 知识能力（摘要、编程、汇率）"""
 
 from ai.llm import llm_complete
-from ai.registry import tool
+from ai.registry import ai_tool
 from core.context import ToolContext
 from core.http import get_client
 
 
-@tool(
+@ai_tool(
+  description="将长文本压缩为简短摘要，保留要点",
   tags=["language"],
   examples=["帮我总结这段话", "概括一下", "太长不看"],
+  triggers=["摘要"],
+  semantic_slots=["文本总结", "太长不看", "概括"],
 )
 async def summarize_text(ctx: ToolContext, text: str) -> str:
   """将长文本压缩为简短摘要，保留要点
@@ -30,9 +33,13 @@ async def summarize_text(ctx: ToolContext, text: str) -> str:
     return f"摘要失败: {e}"
 
 
-@tool(
+@ai_tool(
+  description="汇率换算，支持主要货币",
   tags=["math", "info"],
   examples=["100美元等于多少人民币", "日元换算", "汇率查询"],
+  triggers=["汇率", "换算"],
+  patterns=[r"\d+.*(美元|日元|欧元|韩元|英镑)"],
+  semantic_slots=["货币转换", "外币兑换"],
 )
 async def convert_currency(ctx: ToolContext, amount: float, source: str, target: str = "CNY") -> str:
   """汇率换算，支持主要货币
@@ -63,9 +70,13 @@ async def convert_currency(ctx: ToolContext, amount: float, source: str, target:
     return f"汇率查询失败: {e}"
 
 
-@tool(
+@ai_tool(
+  description="回答编程相关问题，支持代码解释、生成和调试",
   tags=["info"],
   examples=["怎么用Python写快排", "JS的Promise怎么用", "这段代码什么意思", "帮我写个正则"],
+  triggers=["代码", "编程"],
+  patterns=[r"(写个|帮我写).*(正则|代码|脚本)"],
+  semantic_slots=["编程帮助", "代码解释", "写代码"],
 )
 async def code_helper(ctx: ToolContext, question: str) -> str:
   """回答编程相关问题，支持代码解释、生成和调试

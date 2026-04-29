@@ -4,14 +4,18 @@ import random
 from datetime import datetime
 
 from ai.llm import llm_complete
-from ai.registry import tool
+from ai.registry import ai_tool
 from core.context import ToolContext
 from core.http import get_client
 
 
-@tool(
+@ai_tool(
+  description="日期计算：倒计时、推算日期、星期查询",
   tags=["math", "info"],
   examples=["距离过年还有多少天", "100天后是几号", "2024年10月1日是星期几"],
+  triggers=["倒计时", "距离"],
+  patterns=[r"\d+天(后|前)是", r"距离.+还有"],
+  semantic_slots=["日期计算", "星期几", "多少天"],
 )
 async def date_calc(ctx: ToolContext, query: str) -> str:
   """日期计算：倒计时、推算日期、星期查询
@@ -32,9 +36,12 @@ async def date_calc(ctx: ToolContext, query: str) -> str:
     return f"计算失败: {e}"
 
 
-@tool(
+@ai_tool(
+  description="查询IP地址的归属地信息",
   tags=["info"],
   examples=["查一下这个IP是哪里的", "114.514.0.1在哪", "ip归属地"],
+  triggers=["IP", "ip", "归属"],
+  semantic_slots=["IP查询", "归属地"],
 )
 async def ip_lookup(ctx: ToolContext, ip: str) -> str:
   """查询IP地址的归属地信息
@@ -54,9 +61,12 @@ async def ip_lookup(ctx: ToolContext, ip: str) -> str:
     return f"查询失败: {e}"
 
 
-@tool(
+@ai_tool(
+  description="生成一个随机虚拟人设",
   tags=["fun"],
   examples=["帮我生成一个随机人设", "随机人设", "来个角色设定"],
+  triggers=["人设"],
+  semantic_slots=["随机人设", "角色生成"],
 )
 async def random_persona(ctx: ToolContext) -> str:
   """生成一个随机虚拟人设"""
@@ -78,9 +88,13 @@ async def random_persona(ctx: ToolContext) -> str:
   )
 
 
-@tool(
+@ai_tool(
+  description="帮用户做选择，给出分析和建议（选择困难症拯救者）",
   tags=["fun"],
   examples=["帮我做个决定", "选择困难症", "帮我选A还是B还是C"],
+  triggers=["帮我选"],
+  patterns=[r"选择困难"],
+  semantic_slots=["帮我做决定", "选A还是B"],
 )
 async def make_decision(ctx: ToolContext, options: str) -> str:
   """帮用户做选择，给出分析和建议（选择困难症拯救者）

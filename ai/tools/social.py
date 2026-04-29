@@ -3,15 +3,18 @@
 import random
 
 from ai.llm import llm_complete
-from ai.registry import tool
+from ai.registry import ai_tool
 from core import store
 from core.context import ToolContext
 from core.http import get_client
 
 
-@tool(
+@ai_tool(
+  description="显示当前群的好感度排行榜",
   tags=["context", "group"],
   examples=["好感排行", "谁和月灵关系最好", "好感度排行榜"],
+  triggers=["好感", "排行"],
+  semantic_slots=["好感度", "关系排名", "谁最喜欢"],
 )
 async def affinity_ranking(ctx: ToolContext) -> str:
   """显示当前群的好感度排行榜"""
@@ -39,9 +42,13 @@ async def affinity_ranking(ctx: ToolContext) -> str:
   return "\n".join(lines)
 
 
-@tool(
+@ai_tool(
+  description="以月灵的名义转发一条匿名消息到群里",
   tags=["fun"],
   examples=["帮我匿名说一句话", "匿名吐槽", "匿名表白"],
+  triggers=["匿名"],
+  patterns=[r"匿名(说|吐槽|表白)"],
+  semantic_slots=["匿名消息", "匿名留言"],
 )
 async def anonymous_message(ctx: ToolContext, message: str) -> str:
   """以月灵的名义转发一条匿名消息到群里
@@ -63,9 +70,13 @@ async def anonymous_message(ctx: ToolContext, message: str) -> str:
     return "发送失败"
 
 
-@tool(
+@ai_tool(
+  description="查询星座今日运势",
   tags=["fun", "info"],
   examples=["白羊座今天运势", "双子座运势", "天蝎座今天怎么样"],
+  triggers=["星座", "运势"],
+  patterns=[r"(白羊|金牛|双子|巨蟹|狮子|处女|天秤|天蝎|射手|摩羯|水瓶|双鱼).{0,3}运势"],
+  semantic_slots=["今日运势", "星座运程"],
 )
 async def horoscope(ctx: ToolContext, sign: str) -> str:
   """查询星座今日运势
@@ -115,9 +126,12 @@ async def horoscope(ctx: ToolContext, sign: str) -> str:
     return f"查询失败: {e}"
 
 
-@tool(
+@ai_tool(
+  description="成语接龙，给出一个成语，月灵接下一个",
   tags=["fun", "language"],
   examples=["成语接龙 一帆风顺", "接龙", "来玩成语接龙"],
+  triggers=["接龙", "成语"],
+  semantic_slots=["成语接龙", "文字游戏"],
 )
 async def idiom_chain(ctx: ToolContext, idiom: str) -> str:
   """成语接龙，给出一个成语，月灵接下一个
@@ -131,7 +145,7 @@ async def idiom_chain(ctx: ToolContext, idiom: str) -> str:
   try:
     reply = await llm_complete(
       "你是成语接龙高手。规则：用对方成语的最后一个字（同音也可以）作为开头，接一个新成语。"
-      "只回复一个成语（4个字），不要加任何解释。如果实在接不上就说"接不上了，你赢了！"",
+      "只回复一个成语（4个字），不要加任何解释。如果实在接不上就说'接不上了，你赢了！'",
       idiom,
       temperature=0.8,
       max_tokens=20,
@@ -141,9 +155,13 @@ async def idiom_chain(ctx: ToolContext, idiom: str) -> str:
     return "接不上了，你赢了！"
 
 
-@tool(
+@ai_tool(
+  description="查看今日宜忌（老黄历风格随机生成）",
   tags=["fun"],
   examples=["今天适合做什么", "今天老黄历", "宜忌查询"],
+  triggers=["老黄历", "宜忌"],
+  patterns=[r"今天(适合|宜)"],
+  semantic_slots=["今日运势", "老黄历", "适合做什么"],
 )
 async def daily_fortune(ctx: ToolContext) -> str:
   """查看今日宜忌（老黄历风格随机生成）"""

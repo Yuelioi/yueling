@@ -5,7 +5,7 @@ import time
 from sqlalchemy import Integer, Float, Text, Boolean, select, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from ai.registry import tool
+from ai.registry import ai_tool
 from core.context import ToolContext
 from core.database import Base, async_session
 from core.http import get_client
@@ -37,9 +37,13 @@ async def _get_undone_todos(user_id: int):
 
 # ─── 待办清单 ──────────────────────────────────────────────
 
-@tool(
+@ai_tool(
+  description="管理个人待办清单",
   tags=["info"],
   examples=["帮我记一下明天交报告", "我的待办", "完成第1个待办", "删除待办"],
+  triggers=["待办", "todo"],
+  patterns=[r"(帮我)?记一下"],
+  semantic_slots=["待办清单", "备忘录", "记事"],
 )
 async def manage_todo(ctx: ToolContext, action: str, content: str = "", item_id: int = 0) -> str:
   """管理个人待办清单
@@ -97,9 +101,13 @@ async def manage_todo(ctx: ToolContext, action: str, content: str = "", item_id:
 
 # ─── 点歌 ─────────────────────────────────────────────────
 
-@tool(
+@ai_tool(
+  description="搜索音乐，返回歌曲信息",
   tags=["fun", "search"],
   examples=["帮我点一首周杰伦的歌", "搜一下晴天", "来首歌"],
+  triggers=["点歌", "歌"],
+  patterns=[r"来首.+"],
+  semantic_slots=["搜歌", "音乐搜索", "听歌"],
 )
 async def search_music(ctx: ToolContext, keyword: str) -> str:
   """搜索音乐，返回歌曲信息
@@ -132,9 +140,12 @@ async def search_music(ctx: ToolContext, keyword: str) -> str:
 
 # ─── 以图搜图 ─────────────────────────────────────────────
 
-@tool(
+@ai_tool(
+  description="用图片搜索原始来源（需要消息附带图片）",
   tags=["image", "search"],
   examples=["帮我搜一下这张图的出处", "以图搜图", "这张图是哪来的"],
+  triggers=["搜图", "出处"],
+  semantic_slots=["以图搜图", "图源", "图片来源"],
 )
 async def reverse_image_search(ctx: ToolContext) -> str:
   """用图片搜索原始来源（需要消息附带图片）"""

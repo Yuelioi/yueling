@@ -2,16 +2,20 @@
 
 import io
 
-from ai.registry import tool
+from ai.registry import ai_tool
 from ai.session import session_manager
 from ai.tools.analysis import _parse_qq_messages
 from core.context import ToolContext
 from services.qq_api import download_avatar
 
 
-@tool(
+@ai_tool(
+  description="获取群最近聊天记录，用于理解上下文和确定发言者身份",
   tags=["context"],
   examples=["刚才谁说了什么", "上面说的是谁", "最近聊天记录"],
+  triggers=["聊天记录", "刚才"],
+  patterns=[r"刚才.+说", r"上面说"],
+  semantic_slots=["最近消息", "上文", "之前聊了什么"],
 )
 async def get_chat_history(ctx: ToolContext, count: int = 15) -> str:
   """获取群最近聊天记录，用于理解上下文和确定发言者身份
@@ -34,9 +38,13 @@ async def get_chat_history(ctx: ToolContext, count: int = 15) -> str:
     return f"获取失败: {e}"
 
 
-@tool(
+@ai_tool(
+  description="通过昵称/群名片模糊匹配查找用户QQ号",
   tags=["context", "group"],
   examples=["禁言张三", "查一下小明", "那个xxx是谁"],
+  triggers=["谁"],
+  patterns=[r"那个\S+是谁"],
+  semantic_slots=["查找用户", "找人", "QQ号"],
 )
 async def resolve_user_by_name(ctx: ToolContext, name: str) -> str:
   """通过昵称/群名片模糊匹配查找用户QQ号
@@ -60,9 +68,12 @@ async def resolve_user_by_name(ctx: ToolContext, name: str) -> str:
     return f"查找失败: {e}"
 
 
-@tool(
+@ai_tool(
+  description="获取用户头像数据存入上下文，供后续绘图/合成工具使用",
   tags=["context", "image"],
   examples=["用他的头像", "拿一下头像做图"],
+  triggers=["头像"],
+  semantic_slots=["用户头像", "拿头像"],
 )
 async def fetch_avatar(ctx: ToolContext, user: int = 0) -> str:
   """获取用户头像数据存入上下文，供后续绘图/合成工具使用
@@ -82,9 +93,12 @@ async def fetch_avatar(ctx: ToolContext, user: int = 0) -> str:
     return "获取头像失败"
 
 
-@tool(
+@ai_tool(
+  description="获取群成员列表，可按关键词筛选，用于确认成员身份",
   tags=["context", "group"],
   examples=["群里有没有叫xxx的", "这个人在群里吗", "群里谁是管理"],
+  triggers=["群友", "成员"],
+  semantic_slots=["群成员列表", "管理员", "群里有没有"],
 )
 async def get_group_members(ctx: ToolContext, keyword: str = "") -> str:
   """获取群成员列表，可按关键词筛选，用于确认成员身份

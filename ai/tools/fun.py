@@ -1,13 +1,17 @@
 """AI 内置工具 — 趣味工具（缩写解码、诗词、鸡汤、热评）"""
 
-from ai.registry import tool
+from ai.registry import ai_tool
 from core.context import ToolContext
 from core.http import get_client
 
 
-@tool(
+@ai_tool(
+  description="解码拼音缩写/网络黑话，如yyds、xswl、awsl等",
   tags=["language", "info"],
   examples=["yyds是什么意思", "xswl什么意思", "能不能好好说话"],
+  triggers=["缩写", "什么意思"],
+  patterns=[r"\w{2,6}(是什么|啥意思)"],
+  semantic_slots=["网络黑话", "拼音缩写", "yyds"],
 )
 async def decode_abbreviation(ctx: ToolContext, text: str) -> str:
   """解码拼音缩写/网络黑话，如yyds、xswl、awsl等
@@ -38,9 +42,13 @@ async def decode_abbreviation(ctx: ToolContext, text: str) -> str:
     return f"查询失败: {e}"
 
 
-@tool(
+@ai_tool(
+  description="获取随机古诗词、心灵鸡汤或网易云音乐热评",
   tags=["fun"],
   examples=["来首诗", "来碗鸡汤", "随机一首古诗", "网易云热评"],
+  triggers=["诗", "鸡汤", "热评"],
+  patterns=[r"来(首|碗|条).+"],
+  semantic_slots=["古诗词", "心灵鸡汤", "网易云"],
 )
 async def get_inspiration(ctx: ToolContext, category: str = "poetry") -> str:
   """获取随机古诗词、心灵鸡汤或网易云音乐热评
@@ -72,9 +80,12 @@ async def get_inspiration(ctx: ToolContext, category: str = "poetry") -> str:
     return f"获取失败: {e}"
 
 
-@tool(
+@ai_tool(
+  description="查询当前Epic Games商店的免费游戏",
   tags=["info"],
   examples=["今天Epic有什么免费游戏", "Epic免费", "白嫖游戏"],
+  triggers=["Epic", "免费游戏"],
+  semantic_slots=["白嫖游戏", "Epic免费"],
 )
 async def epic_free_games(ctx: ToolContext) -> str:
   """查询当前Epic Games商店的免费游戏"""
