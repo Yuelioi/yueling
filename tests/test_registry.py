@@ -1,6 +1,6 @@
 """测试 AI 工具注册和 schema 生成"""
 
-from ai.registry import ToolMeta, ToolRegistry, _build_parameters, _parse_docstring_args, tool
+from ai.registry import ToolMeta, ToolRegistry, _build_parameters, _parse_docstring_args, ai_tool
 
 
 def test_parse_docstring_args():
@@ -78,7 +78,7 @@ def test_registry_crud():
 
 def test_tool_decorator():
   # 手动注册代替全局 registry 的 decorator
-  @tool(tags=["math"], examples=["calculate 1+1"])
+  @ai_tool(tags=["math"], examples=["calculate 1+1"])
   async def calculate(ctx, expression: str):
     """Calculate a math expression.
 

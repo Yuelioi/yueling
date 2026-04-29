@@ -9,7 +9,6 @@ from nonebot_plugin_apscheduler import scheduler
 
 from core.deps import At
 from core.config import config
-from core.context import ToolContext
 
 __plugin_meta__ = PluginMetadata(
   name="定时提醒",
@@ -18,17 +17,6 @@ __plugin_meta__ = PluginMetadata(
   extra={
     "group": "定时任务",
     "commands": ["提醒"],
-    "tools": [{
-      "name": "set_reminder",
-      "description": "设置定时提醒",
-      "tags": ["scheduler"],
-      "examples": ["提醒我30分钟后开会", "5分钟后叫我", "1小时后提醒吃饭"],
-      "parameters": {
-        "minutes": {"type": "integer", "description": "多少分钟后提醒"},
-        "content": {"type": "string", "description": "提醒内容", "default": "时间到了"},
-      },
-      "handler": "memo_tool_handler",
-    }],
   },
 )
 
@@ -112,26 +100,6 @@ def extract_time_and_content(
     total_seconds = timedelta(hours=hours, minutes=minutes, seconds=seconds).total_seconds()
 
   return total_seconds, content.strip()
-
-
-async def memo_tool_handler(ctx: ToolContext, minutes: int = 5, content: str = "时间到了") -> str:
-  if minutes < 1 or minutes > 1440:
-    return "提醒时间需要在1分钟到24小时之间"
-
-  task_id = f"ai-memo-{ctx.group_id}-{ctx.user_id}-{datetime.now().timestamp()}"
-  msg = MessageSegment.at(ctx.user_id) + MessageSegment.text(f" {content}")
-
-  async def _remind():
-    bot = get_bot()
-    await bot.send_group_msg(group_id=ctx.group_id, message=msg)
-
-  scheduler.add_job(
-    func=_remind,
-    trigger="date",
-    id=task_id,
-    next_run_time=datetime.now() + timedelta(minutes=minutes),
-  )
-  return f"已设置: {minutes}分钟后提醒「{content}」"
 
 
 def extract_user_from_content(content):

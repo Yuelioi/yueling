@@ -6,7 +6,6 @@ from nonebot.plugin import PluginMetadata
 
 from core.handler import register_handler
 from core import store
-from core.context import ToolContext
 from ai.relation import get_relationship_info
 
 __plugin_meta__ = PluginMetadata(
@@ -16,16 +15,6 @@ __plugin_meta__ = PluginMetadata(
   extra={
     "group": "娱乐",
     "commands": ["查看好感度"],
-    "tools": [{
-      "name": "check_affinity",
-      "description": "查看用户与月灵的好感度和关系状态",
-      "tags": ["context"],
-      "examples": ["我们关系怎么样", "你喜欢我吗", "好感度多少"],
-      "parameters": {
-        "user": {"type": "integer", "description": "QQ号，0=当前用户", "default": 0},
-      },
-      "handler": "affinity_tool_handler",
-    }],
   },
 )
 
@@ -40,10 +29,3 @@ async def pref_handler(event: GroupMessageEvent):
 
 
 register_handler(pref_cmd, pref_handler)
-
-
-async def affinity_tool_handler(ctx: ToolContext, user: int = 0) -> str:
-  target = user or ctx.user_id
-  user_like = store.user_prefs.get(str(target), 50)
-  info = get_relationship_info(user_like)
-  return f"好感度: {user_like}/100 | 关系: {info['relationship']} | 态度: {info['attitude']}"

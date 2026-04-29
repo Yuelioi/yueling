@@ -4,7 +4,6 @@ from nonebot.plugin import PluginMetadata
 from core.deps import Args
 from core.handler import register_handler
 from core.http import get_client
-from core.context import ToolContext
 
 __plugin_meta__ = PluginMetadata(
   name="剑网三小工具",
@@ -13,16 +12,6 @@ __plugin_meta__ = PluginMetadata(
   extra={
     "group": "game",
     "commands": ["物价"],
-    "tools": [{
-      "name": "jw3_price",
-      "description": "查询剑网三物品价格",
-      "tags": ["game"],
-      "examples": ["查物价 大橙武", "剑网三物价 xxx"],
-      "parameters": {
-        "keyword": {"type": "string", "description": "物品关键词"},
-      },
-      "handler": "jw3_tool_handler",
-    }],
   },
 )
 
@@ -125,19 +114,3 @@ async def price(args=Args()):
 
 
 register_handler(jw3_price, price)
-
-
-# ─── AI Tool 入口 ─────────────────────────────────────────
-
-
-async def jw3_tool_handler(ctx: ToolContext, keyword: str) -> str:
-  products = await appearance(keyword)
-  if not products:
-    direct = await get_price(keyword)
-    return direct or f"未找到「{keyword}」"
-
-  lines = [f"「{keyword}」物价:"]
-  for product in products[:3]:
-    info = await get_price(product["name"])
-    lines.append(info or f"{product['name']}: 暂无")
-  return "\n".join(lines)

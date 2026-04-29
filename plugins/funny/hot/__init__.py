@@ -5,7 +5,6 @@ from nonebot.adapters.onebot.v11 import MessageSegment
 from nonebot.plugin import PluginMetadata
 
 from services import text_to_image
-from core.context import ToolContext
 from plugins.funny.hot.utils import baidu, bilibili, weibo, zhihu
 
 __plugin_meta__ = PluginMetadata(
@@ -15,16 +14,6 @@ __plugin_meta__ = PluginMetadata(
   extra={
     "group": "娱乐",
     "commands": ["查热搜"],
-    "tools": [{
-      "name": "get_hot_topics",
-      "description": "查询各平台热搜榜(微博/知乎/B站/百度)",
-      "tags": ["search", "info"],
-      "examples": ["查热搜", "微博热搜", "今天有什么新闻"],
-      "parameters": {
-        "platform": {"type": "string", "description": "平台(weibo/zhihu/bilibili/baidu/all)", "default": "all"},
-      },
-      "handler": "hot_tool_handler",
-    }],
   },
 )
 
@@ -42,17 +31,3 @@ async def get_hots():
   ]
   img = text_to_image(lines)
   await hot.finish(MessageSegment.image(file=img))
-
-
-async def hot_tool_handler(ctx: ToolContext, platform: str = "all") -> str:
-  handlers = {"weibo": weibo, "zhihu": zhihu, "bilibili": bilibili, "baidu": baidu}
-  if platform == "all":
-    results = await asyncio.gather(weibo(), bilibili(), baidu(), zhihu())
-    lines = []
-    for name, data in zip(["微博", "B站", "百度", "知乎"], results):
-      lines.append(f"【{name}】")
-      lines.extend((data or ["无数据"])[:5])
-    return "\n".join(lines)
-  handler = handlers.get(platform, weibo)
-  data = await handler()
-  return "\n".join(data[:10]) if data else "获取失败"

@@ -9,7 +9,6 @@ from core.handler import register_handler
 from core.http import get_proxy_client
 from services import text_to_image
 from services.external_api import fetch_image_from_url_ssl
-from core.context import ToolContext
 
 __plugin_meta__ = PluginMetadata(
   name="动漫识别",
@@ -18,15 +17,6 @@ __plugin_meta__ = PluginMetadata(
   extra={
     "group": "娱乐",
     "commands": ["场景识别"],
-    "tools": [{
-      "name": "trace_anime",
-      "description": "识别图片中的动漫场景（需要附带图片）",
-      "tags": ["image"],
-      "examples": ["这是什么番", "搜番", "识别动漫"],
-      "negative_examples": ["识别图片文字"],
-      "parameters": {},
-      "handler": "trace_tool_handler",
-    }],
   },
 )
 
@@ -87,14 +77,3 @@ async def image_trace(img=Img(required=True)):
 
 
 register_handler(trace, image_trace)
-
-
-# ─── AI Tool 入口 ─────────────────────────────────────────
-
-
-async def trace_tool_handler(ctx: ToolContext) -> str:
-  imgs = ctx.get_images()
-  if not imgs:
-    return "请在消息中附带图片"
-  results = await do_trace(imgs[0])
-  return format_trace_results(results) if results else "搜番服务不可用"

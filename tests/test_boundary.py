@@ -23,7 +23,7 @@ def _collect_py_files(directory: Path) -> list[Path]:
   return sorted(directory.glob("*.py"))
 
 
-_LEGACY_SERVICE_VIOLATIONS = {"draw.py"}
+_LEGACY_SERVICE_VIOLATIONS: set[str] = set()
 
 
 @pytest.mark.parametrize(

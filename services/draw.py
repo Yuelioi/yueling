@@ -1,17 +1,9 @@
 from io import BytesIO
 from pathlib import Path
 
-from nonebot.adapters.onebot.v11 import MessageSegment
 from PIL import Image, ImageDraw, ImageFont
 
 from core.config import config
-
-
-def random_item(random_files=None):
-  if not random_files:
-    return None
-  if pic := draw_grid(random_files):
-    return MessageSegment.image(pic)
 
 
 def draw_grid(

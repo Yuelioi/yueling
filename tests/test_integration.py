@@ -303,14 +303,15 @@ async def test_dispatch_writes_semantic_memory(ctx):
     mock_mem.get_user_context = AsyncMock(return_value="")
     mock_mem.get_group_rules = AsyncMock(return_value=[])
     mock_mem.write_semantic = AsyncMock()
+    mock_mem.smart_write_semantic = AsyncMock()
 
     chat_resp = _make_response(content="知道了~ [评分：+2]")
     mock_client.chat.completions.create = AsyncMock(return_value=chat_resp)
 
     await dispatch("我喜欢碧蓝档案", ctx)
-    mock_mem.write_semantic.assert_called_once()
-    call_args = mock_mem.write_semantic.call_args
-    assert "碧蓝档案" in call_args[1].get("content", "") or "碧蓝档案" in str(call_args)
+    mock_mem.smart_write_semantic.assert_called_once()
+    call_args = mock_mem.smart_write_semantic.call_args
+    assert "碧蓝档案" in str(call_args)
 
 
 # ─── Group Rules 注入 ────────────────────────────────────────
@@ -364,4 +365,4 @@ def test_proactive_respects_cooldown():
   proactive_manager.feed_message(200001, 100002, "月灵在吗")
   proactive_manager.feed_message(200001, 100003, "月灵帮忙")
 
-  assert not proactive_manager.should_speak(200001, 123456)
+  assert not proactive_manager.should_speak(200001)

@@ -13,7 +13,6 @@ from PIL import Image
 from core.deps import Args, Img
 from core.handler import register_handler
 from services.external_api import fetch_image_from_url_ssl
-from core.context import ToolContext
 
 __plugin_meta__ = PluginMetadata(
   name="roll",
@@ -22,17 +21,6 @@ __plugin_meta__ = PluginMetadata(
   extra={
     "group": "随机",
     "commands": ["roll"],
-    "tools": [{
-      "name": "roll_dice",
-      "description": "掷骰子、随机选择、或从GIF中随机抽取一帧(需要附带GIF图片)",
-      "tags": ["fun", "random", "image"],
-      "examples": ["roll 100", "帮我选吃火锅还是烧烤", "随机一个1到6", "帮我roll下这个GIF"],
-      "parameters": {
-        "max_value": {"type": "integer", "description": "最大值(掷骰子时)", "default": 100},
-        "options": {"type": "string", "description": "用空格分隔的选项(二选一时)", "default": ""},
-      },
-      "handler": "roll_tool_handler",
-    }],
   },
 )
 
@@ -118,24 +106,3 @@ async def random_handler(event: Event, args: list[str] = Args(0), img: str = Img
 
 
 register_handler(random_cmd, random_handler)
-
-
-# ─── AI Tool 入口 ─────────────────────────────────────────
-
-
-async def roll_tool_handler(ctx: ToolContext, max_value: int = 100, options: str = "") -> str:
-  # 如果有图片，尝试 GIF 抽帧
-  imgs = ctx.get_images()
-  if imgs:
-    try:
-      output = await do_gif_frame(imgs[0])
-      from nonebot.adapters.onebot.v11 import MessageSegment
-      return MessageSegment.image(file=output)
-    except ValueError as e:
-      return str(e)
-
-  if options:
-    items = [o.strip() for o in options.split() if o.strip()]
-    if items:
-      return do_choose(items)
-  return f"🎲 {do_roll(max_value)}"

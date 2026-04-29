@@ -6,7 +6,6 @@ from nonebot.plugin import PluginMetadata
 
 from core.deps import Args, Ats
 from core.config import config
-from core.context import ToolContext
 
 __plugin_meta__ = PluginMetadata(
   name="禁言",
@@ -15,21 +14,6 @@ __plugin_meta__ = PluginMetadata(
   extra={
     "group": "群管",
     "commands": ["禁言"],
-    "tools": [{
-      "name": "ban_user",
-      "description": "禁言群成员",
-      "tags": ["group", "moderation"],
-      "examples": ["禁言张三5分钟", "把他禁言10分钟"],
-      "negative_examples": ["给他点颜色看看", "开个玩笑禁言一下"],
-      "parameters": {
-        "user": {"type": "integer", "description": "目标用户QQ号"},
-        "duration": {"type": "integer", "description": "禁言时长(分钟)", "default": 1},
-      },
-      "permission": "admin",
-      "risk_level": "high",
-      "confirm_required": True,
-      "handler": "ban_tool_handler",
-    }],
   },
 )
 
@@ -115,13 +99,3 @@ async def group_ban(bot: Bot, event: GroupMessageEvent, ats=Ats(), args=Args(0, 
 
   result = await do_ban(bot, event.group_id, target_id, duration)
   await ban.finish(result)
-
-
-# ─── AI Tool 入口 ─────────────────────────────────────────
-
-
-async def ban_tool_handler(ctx: ToolContext, user: int, duration: int = 1) -> str:
-  resolved_user = await ctx.resolve_user(user)
-  if resolved_user == config.bot.owner_id:
-    return "不可以对爹动手!"
-  return await do_ban(ctx.bot, ctx.group_id, resolved_user, duration)

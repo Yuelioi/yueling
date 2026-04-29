@@ -6,7 +6,6 @@ from nonebot.plugin import PluginMetadata
 
 from core.deps import Args
 from core.handler import register_handler
-from core.context import ToolContext
 
 __plugin_meta__ = PluginMetadata(
   name="计算器",
@@ -15,16 +14,6 @@ __plugin_meta__ = PluginMetadata(
   extra={
     "group": "工具",
     "commands": ["计算"],
-    "tools": [{
-      "name": "calculate",
-      "description": "计算数学表达式",
-      "tags": ["math"],
-      "examples": ["计算 2+3*4", "算一下 100/7", "2的10次方"],
-      "parameters": {
-        "expression": {"type": "string", "description": "数学表达式"},
-      },
-      "handler": "calc_tool_handler",
-    }],
   },
 )
 
@@ -115,7 +104,3 @@ async def _calc(args: list[str] = Args()):
 
 
 register_handler(calculator, _calc)
-
-
-async def calc_tool_handler(ctx: ToolContext, expression: str) -> str:
-  return safe_calculate(expression)

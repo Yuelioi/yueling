@@ -219,7 +219,7 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
 
   ocr_text = ""
   if has_image:
-    from plugins.tools.ocr import do_ocr
+    from services.ocr import do_ocr
     ocr_parts = []
     for img_url in images[:3]:
       try:

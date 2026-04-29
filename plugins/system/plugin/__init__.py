@@ -9,7 +9,6 @@ from nonebot.plugin import PluginMetadata
 from core.deps import Args
 from core.handler import register_handler
 from core import store
-from core.context import ToolContext
 from core.permission import is_admin, is_superuser, permission_manager
 from plugins.system.plugin.manager import hm
 
@@ -20,18 +19,6 @@ __plugin_meta__ = PluginMetadata(
   extra={
     "group": "系统",
     "commands": ["禁用插件", "启用插件", "查看禁用"],
-    "tools": [{
-      "name": "manage_plugin",
-      "description": "在当前群禁用或启用指定插件（需要管理员权限）",
-      "tags": ["moderation", "group"],
-      "examples": ["禁用翻译插件", "启用OCR", "查看禁用了哪些插件"],
-      "parameters": {
-        "action": {"type": "string", "description": "操作: disable/enable/list"},
-        "plugin_name": {"type": "string", "description": "插件名称（action=list时可不填）", "default": ""},
-      },
-      "permission": "admin",
-      "handler": "plugin_tool_handler",
-    }],
   },
 )
 manager = on_command("禁用插件", aliases={"启用插件", "查看禁用"})
@@ -100,44 +87,6 @@ async def manager_handler(bot: Bot, event: GroupMessageEvent, cmd=RawCommand(), 
 
 
 register_handler(manager, manager_handler)
-
-
-# ─── AI Tool 入口 ─────────────────────────────────────────
-
-async def plugin_tool_handler(ctx: ToolContext, action: str, plugin_name: str = "") -> str:
-  if action == "list":
-    ban = store.group_blacklist.get(ctx.group_id, [])
-    if ban:
-      return "已禁用: " + "、".join(ban)
-    return "当前没有禁用任何插件"
-
-  if not plugin_name:
-    return "请指定插件名称"
-
-  addon = hm.get_addon(plugin_name)
-  if not addon:
-    available = [a.name for a in hm.Addons.values() if not a.hidden]
-    return f"未找到插件'{plugin_name}'，可用: {', '.join(available[:10])}"
-
-  ban = store.group_blacklist.get(ctx.group_id, [])
-
-  if action == "disable":
-    if addon.name in ban:
-      return f"{addon.name} 已经是禁用状态"
-    ban.append(addon.name)
-    store.group_blacklist[ctx.group_id] = ban
-    store.group_blacklist.save()
-    return f"已禁用 {addon.name}"
-
-  elif action == "enable":
-    if addon.name not in ban:
-      return f"{addon.name} 没有被禁用"
-    ban.remove(addon.name)
-    store.group_blacklist[ctx.group_id] = ban
-    store.group_blacklist.save()
-    return f"已启用 {addon.name}"
-
-  return "未知操作，请使用 disable/enable/list"
 
 
 # ─── 用户个人屏蔽 ─────────────────────────────────────────

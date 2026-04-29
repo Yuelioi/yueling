@@ -9,7 +9,6 @@ from nonebot.plugin import PluginMetadata
 from core.deps import Args
 from core.handler import register_handler
 from core.config import config
-from core.context import ToolContext
 from core import store
 
 __plugin_meta__ = PluginMetadata(
@@ -19,16 +18,6 @@ __plugin_meta__ = PluginMetadata(
   extra={
     "group": "用户",
     "commands": ["我的标签", "添加标签", "删除标签"],
-    "tools": [{
-      "name": "get_user_tags",
-      "description": "查看用户的个人标签",
-      "tags": ["context"],
-      "examples": ["他的标签是什么", "这个人有什么标签"],
-      "parameters": {
-        "user": {"type": "integer", "description": "QQ号，0=当前用户", "default": 0},
-      },
-      "handler": "tags_tool_handler",
-    }],
   },
 )
 
@@ -101,11 +90,3 @@ async def tag_handle(event: GroupMessageEvent, cmd: str = RawCommand(), args_lis
 
 
 register_handler(tags, tag_handle)
-
-
-async def tags_tool_handler(ctx: ToolContext, user: int = 0) -> str:
-  target = str(user or ctx.user_id)
-  current_tags = store.user_tags.get(target, [])
-  if not current_tags:
-    return "该用户没有标签"
-  return "用户标签: " + ", ".join(current_tags)

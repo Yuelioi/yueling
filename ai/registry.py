@@ -141,37 +141,6 @@ class ToolRegistry:
 registry = ToolRegistry()
 
 
-def tool(
-  tags: list[str] | None = None,
-  examples: list[str] | None = None,
-  negative_examples: list[str] | None = None,
-  permission: str = "member",
-  risk_level: str = "low",
-  confirm_required: bool = False,
-):
-  def decorator(func: Callable):
-    doc = func.__doc__ or ""
-    first_line = doc.strip().split("\n")[0] if doc.strip() else func.__name__
-    parameters = _build_parameters(func)
-
-    meta = ToolMeta(
-      name=func.__name__,
-      description=first_line,
-      tags=tags or [],
-      examples=examples or [],
-      negative_examples=negative_examples or [],
-      parameters=parameters,
-      permission=permission,
-      risk_level=risk_level,
-      confirm_required=confirm_required,
-      func=func,
-    )
-    registry.register(meta)
-    return func
-
-  return decorator
-
-
 def ai_tool(
   description: str | None = None,
   tags: list[str] | None = None,

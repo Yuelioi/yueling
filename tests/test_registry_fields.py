@@ -2,7 +2,7 @@
 
 import re
 
-from ai.registry import ToolMeta, ai_tool, registry, tool
+from ai.registry import ToolMeta, ai_tool, registry
 
 
 def test_tool_meta_has_new_fields():
@@ -41,8 +41,8 @@ def test_ai_tool_alias_registers_correctly():
   assert meta.allow_partial is True
 
 
-def test_legacy_tool_decorator_still_works():
-  @tool(tags=["legacy"])
+def test_ai_tool_minimal_form():
+  @ai_tool(tags=["legacy"])
   async def _legacy_tool_for_test(ctx, x: str) -> str:
     """旧装饰器测试"""
     return x
@@ -50,7 +50,7 @@ def test_legacy_tool_decorator_still_works():
   meta = registry.get_by_name("_legacy_tool_for_test")
   assert meta is not None
   assert meta.tags == ["legacy"]
-  assert meta.triggers == []  # 默认空
+  assert meta.triggers == []
 
 
 def test_args_schema_default_none():

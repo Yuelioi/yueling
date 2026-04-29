@@ -10,7 +10,6 @@ from nonebot.permission import Permission
 from nonebot.plugin import PluginMetadata
 
 from core.deps import Args
-from core.context import ToolContext
 from core.permission import is_superuser, is_admin
 
 from .backup_service import backup_service
@@ -31,16 +30,6 @@ __plugin_meta__ = PluginMetadata(
     extra={
         "group": "群管",
         "commands": ["群文件备份", "群文件恢复", "群文件清理", "群文件整理", "本地文件清理","群文件查询",],
-        "tools": [{
-            "name": "search_group_files",
-            "description": "在群文件中搜索包含关键词的文件",
-            "tags": ["group", "search"],
-            "examples": ["群里有没有xx文件", "找一下群文件", "搜索群文件"],
-            "parameters": {
-                "keyword": {"type": "string", "description": "搜索关键词"},
-            },
-            "handler": "file_search_tool_handler",
-        }],
     },
 )
 
@@ -264,14 +253,3 @@ async def handle_query(
         )
 
     await matcher.send("\n".join(msg_lines))
-
-
-async def file_search_tool_handler(ctx: ToolContext, keyword: str) -> str:
-    result = await query_service.execute_query(ctx.bot, ctx.group_id, keyword)
-    if not result.files:
-        return f"未找到包含'{keyword}'的群文件"
-    lines = []
-    for f in result.files:
-        size_mb = f.size / 1024 / 1024
-        lines.append(f"{f.file_name} ({f.folder}, {size_mb:.1f}MB)")
-    return "\n".join(lines)
