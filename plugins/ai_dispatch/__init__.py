@@ -11,6 +11,8 @@ from nonebot.rule import to_me
 from ai.dispatcher import dispatch
 from ai.guard import guard_check
 from ai.proactive import proactive_manager
+from ai.prompt import refresh_tool_summary
+from ai.registry import registry
 from ai.trace import start_trace
 from core.context import ToolContext
 import ai.tools  # noqa: F401
@@ -24,8 +26,10 @@ __plugin_meta__ = PluginMetadata(
 
 
 @get_driver().on_startup
-async def _log_registered_tools():
-  logger.info(f"AI tools registered: {len(__import__('ai.registry', fromlist=['registry']).registry.get_all())}")
+async def _init_tool_summary():
+  all_tools = registry.get_all()
+  refresh_tool_summary(all_tools)
+  logger.info(f"AI tools registered: {len(all_tools)}, tool summary cached")
 
 
 ai_handler = on_message(rule=to_me(), priority=0, block=True)
