@@ -51,3 +51,38 @@ def test_legacy_tool_decorator_still_works():
   assert meta is not None
   assert meta.tags == ["legacy"]
   assert meta.triggers == []  # 默认空
+
+
+def test_args_schema_default_none():
+  m = ToolMeta(name="x", description="d")
+  assert m.args_schema is None
+
+
+def test_args_schema_pydantic_to_openai_schema():
+  from typing import Literal
+
+  from pydantic import BaseModel
+
+  class TestArgs(BaseModel):
+    action: Literal["block", "unblock", "list"]
+    plugin_name: str | None = None
+
+  @ai_tool(
+    description="测试 args_schema",
+    args_schema=TestArgs,
+  )
+  async def _args_schema_test_tool(ctx, args) -> str:
+    return ""
+
+  meta = registry.get_by_name("_args_schema_test_tool")
+  assert meta is not None
+  assert meta.args_schema is TestArgs
+
+  schema = meta.to_openai_schema()
+  params = schema["function"]["parameters"]
+  assert params["type"] == "object"
+  assert "action" in params["properties"]
+  assert "enum" in params["properties"]["action"]
+  assert set(params["properties"]["action"]["enum"]) == {"block", "unblock", "list"}
+  assert "action" in params["required"]
+  assert "plugin_name" not in params["required"]

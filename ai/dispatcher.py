@@ -192,27 +192,24 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
   if not available:
     return "当前没有可用的工具"
 
-  # ─── 影子路由 (shadow mode) ─────────────────────────────────
-  # 新评分召回路由结果只写入 trace，不参与决策；决策仍走 select_candidate_tools。
-  _shadow_t0 = time.perf_counter()
-  shadow_ranked = route_candidates(text, available)
-  shadow_latency_ms = (time.perf_counter() - _shadow_t0) * 1000
-  shadow_recall_sources = {tool.name: recall_source(text, tool) for tool, _ in shadow_ranked}
-  shadow_candidates_ranked = [(t.name, round(s, 3)) for t, s in shadow_ranked]
   llm_latency_ms_total = 0.0
+  tool_latency_ms_total = 0.0
 
   session = session_manager.get(ctx.group_id, ctx.user_id)
 
   # 检查是否是确认回复
   if pending := confirm_manager.try_confirm(ctx.user_id, ctx.group_id, text):
+    _tool_t0 = time.perf_counter()
     result = await execute_tool(pending.tool_name, pending.tool_args, ctx)
+    tool_latency_ms_total = (time.perf_counter() - _tool_t0) * 1000
     record_trace(
       text, pending.tool_name, pending.tool_args, result, session.step_count,
-      recall_sources=shadow_recall_sources,
-      candidates_ranked=shadow_candidates_ranked,
+      recall_sources={"_none": "none"},
+      candidates_ranked=[],
       result_status="error" if result.startswith("ERROR:") else "ok",
-      route_latency_ms=shadow_latency_ms,
+      route_latency_ms=0,
       llm_latency_ms=llm_latency_ms_total,
+      tool_latency_ms=tool_latency_ms_total,
     )
     return result.replace("ERROR:", "执行失败: ") if result.startswith("ERROR:") else result
 
@@ -220,18 +217,32 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
   images = ctx.get_images()
   has_image = bool(images)
 
+  ocr_text = ""
   if has_image:
     from plugins.tools.ocr import do_ocr
     ocr_parts = []
     for img_url in images[:3]:
       try:
-        ocr_text = await do_ocr(img_url)
-        if ocr_text and ocr_text != "未识别出文字":
-          ocr_parts.append(ocr_text)
+        ocr_result = await do_ocr(img_url)
+        if ocr_result and ocr_result != "未识别出文字":
+          ocr_parts.append(ocr_result)
       except Exception:
         pass
     if ocr_parts:
-      session.add_user_message("图片中识别到的文字：\n" + "\n---\n".join(ocr_parts))
+      ocr_text = "\n---\n".join(ocr_parts)
+      session.add_user_message("图片中识别到的文字：\n" + ocr_text)
+
+  # ─── 影子路由 (shadow mode) ─────────────────────────────────
+  # 放在 OCR 拼接之后，让灰度数据包含 OCR 文本。
+  shadow_query = text + "\n" + ocr_text if ocr_text else text
+  _shadow_t0 = time.perf_counter()
+  shadow_ranked = route_candidates(shadow_query, available)
+  shadow_latency_ms = (time.perf_counter() - _shadow_t0) * 1000
+  if shadow_ranked:
+    shadow_recall_sources = {tool.name: recall_source(shadow_query, tool) for tool, _ in shadow_ranked}
+  else:
+    shadow_recall_sources = {"_none": "none"}
+  shadow_candidates_ranked = [(t.name, round(s, 3)) for t, s in shadow_ranked]
 
   candidates = select_candidate_tools(text, available, session.step_count)
 
@@ -280,6 +291,7 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
         result_status="error",
         route_latency_ms=shadow_latency_ms,
         llm_latency_ms=llm_latency_ms_total,
+        tool_latency_ms=tool_latency_ms_total,
       )
       return "AI 服务暂时不可用"
 
@@ -298,6 +310,7 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
           result_status="ok",
           route_latency_ms=shadow_latency_ms,
           llm_latency_ms=llm_latency_ms_total,
+          tool_latency_ms=tool_latency_ms_total,
         )
 
         if should_store_episode(None, step, True):
@@ -323,6 +336,7 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
         result_status="fallback",
         route_latency_ms=shadow_latency_ms,
         llm_latency_ms=llm_latency_ms_total,
+        tool_latency_ms=tool_latency_ms_total,
       )
       _fire_memory_extraction(ctx.user_id, text, reply)
       return reply
@@ -352,6 +366,7 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
         result_status="clarify",
         route_latency_ms=shadow_latency_ms,
         llm_latency_ms=llm_latency_ms_total,
+        tool_latency_ms=tool_latency_ms_total,
       )
       return confirm_manager.format_confirm_message(action)
 
@@ -365,7 +380,9 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
       except Exception:
         pass
 
+    _tool_t0 = time.perf_counter()
     result = await execute_tool(tool_name, tool_args, ctx)
+    tool_latency_ms_total += (time.perf_counter() - _tool_t0) * 1000
 
     # 校验失败 → 回注LLM重试
     if result.startswith("ERROR:"):
@@ -390,6 +407,7 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
         result_status="error" if result.startswith("ERROR:") else "ok",
         route_latency_ms=shadow_latency_ms,
         llm_latency_ms=llm_latency_ms_total,
+        tool_latency_ms=tool_latency_ms_total,
       )
       session.add_assistant_message(result)
       _fire_memory_extraction(ctx.user_id, text, result)
@@ -414,6 +432,7 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
       result_status="fallback",
       route_latency_ms=shadow_latency_ms,
       llm_latency_ms=llm_latency_ms_total,
+      tool_latency_ms=tool_latency_ms_total,
     )
     session.add_assistant_message(last_result)
     _fire_memory_extraction(ctx.user_id, text, last_result)

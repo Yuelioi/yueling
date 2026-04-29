@@ -27,6 +27,7 @@ class ToolTrace:
   result_status: str = "ok"  # ok / error / fallback / clarify
   route_latency_ms: float = 0
   llm_latency_ms: float = 0
+  tool_latency_ms: float = 0
 
 
 _trace_start: contextvars.ContextVar[float] = contextvars.ContextVar("_trace_start", default=0.0)
@@ -48,6 +49,7 @@ def record_trace(
   result_status: str = "ok",
   route_latency_ms: float = 0,
   llm_latency_ms: float = 0,
+  tool_latency_ms: float = 0,
 ):
   start = _trace_start.get()
   duration = (time.time() - start) * 1000 if start else 0
@@ -64,6 +66,7 @@ def record_trace(
     result_status=result_status,
     route_latency_ms=round(route_latency_ms, 1),
     llm_latency_ms=round(llm_latency_ms, 1),
+    tool_latency_ms=round(tool_latency_ms, 1),
   )
 
   try:

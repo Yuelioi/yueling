@@ -24,6 +24,7 @@ class ToolMeta:
   semantic_slots: list[str] = field(default_factory=list)
   alias: str | None = None
   allow_partial: bool = False
+  args_schema: type | None = None
 
   @property
   def compiled_patterns(self) -> list[re.Pattern]:
@@ -32,18 +33,43 @@ class ToolMeta:
     return self._compiled_patterns_cache
 
   def to_openai_schema(self) -> dict:
+    if self.args_schema is not None:
+      params = _schema_from_pydantic(self.args_schema)
+    else:
+      params = {
+        "type": "object",
+        "properties": self.parameters,
+        "required": [k for k, v in self.parameters.items() if "default" not in v],
+      }
     return {
       "type": "function",
       "function": {
         "name": self.name,
         "description": self.description,
-        "parameters": {
-          "type": "object",
-          "properties": self.parameters,
-          "required": [k for k, v in self.parameters.items() if "default" not in v],
-        },
+        "parameters": params,
       },
     }
+
+
+def _schema_from_pydantic(model: type) -> dict[str, Any]:
+  schema = model.model_json_schema()
+  props = schema.get("properties", {})
+  required = schema.get("required", [])
+  # Flatten $defs / allOf references for simple Literal enums
+  defs = schema.get("$defs", {})
+  for key, val in props.items():
+    if "$ref" in val:
+      ref_name = val["$ref"].rsplit("/", 1)[-1]
+      if ref_name in defs:
+        props[key] = defs[ref_name]
+    if "allOf" in val and len(val["allOf"]) == 1 and "$ref" in val["allOf"][0]:
+      ref_name = val["allOf"][0]["$ref"].rsplit("/", 1)[-1]
+      if ref_name in defs:
+        resolved = dict(defs[ref_name])
+        if "default" in val:
+          resolved["default"] = val["default"]
+        props[key] = resolved
+  return {"type": "object", "properties": props, "required": required}
 
 
 def _parse_docstring_args(docstring: str) -> dict[str, str]:
@@ -156,6 +182,7 @@ def ai_tool(
   semantic_slots: list[str] | None = None,
   alias: str | None = None,
   allow_partial: bool = False,
+  args_schema: type | None = None,
   permission: str = "member",
   risk_level: str = "low",
   confirm_required: bool = False,
@@ -166,7 +193,10 @@ def ai_tool(
   def decorator(func: Callable):
     doc = func.__doc__ or ""
     first_line = doc.strip().split("\n")[0] if doc.strip() else func.__name__
-    parameters = _build_parameters(func)
+    if args_schema is not None:
+      parameters = _schema_from_pydantic(args_schema).get("properties", {})
+    else:
+      parameters = _build_parameters(func)
 
     meta = ToolMeta(
       name=name or func.__name__,
@@ -184,6 +214,7 @@ def ai_tool(
       semantic_slots=semantic_slots or [],
       alias=alias,
       allow_partial=allow_partial,
+      args_schema=args_schema,
     )
     registry.register(meta)
     return func
