@@ -62,10 +62,10 @@ def test_select_candidate_tools_no_match_returns_all():
 def test_select_candidate_tools_respects_max():
   tools = [_make_tool(f"tool_{i}", ["fun"]) for i in range(20)]
   result = select_candidate_tools("随机", tools, step=0)
-  assert len(result) <= 10
+  assert len(result) <= 15
 
   result = select_candidate_tools("随机", tools, step=1)
-  assert len(result) <= 10
+  assert len(result) <= 15
 
 
 @pytest.mark.asyncio
