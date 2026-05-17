@@ -21,8 +21,8 @@ def draw_grid(
 
   bg = Image.new("RGB", (grid_width, grid_height), 255)
 
-  if font_path:
-    font = ImageFont.truetype(str(font_path), 36)  # 调整字体大小以适应可能变化的格子大小
+  if font_path and Path(font_path).exists():
+    font = ImageFont.truetype(str(font_path), 36)
   else:
     font = None
 
