@@ -173,6 +173,11 @@ def select_candidate_tools(text: str, available: list[ToolMeta], step: int = 0) 
   return available[:max_tools]
 
 
+def _has_strong_intent(text: str) -> bool:
+  """文本是否命中 INTENT_TAG_MAP 中的任意关键词 — 用于判定是否值得强制 LLM 选工具。"""
+  return any(kw in text for kw in INTENT_TAG_MAP)
+
+
 # ─── ReAct 状态机 ────────────────────────────────────────────
 
 
@@ -296,6 +301,47 @@ async def dispatch(text: str, ctx: ToolContext) -> str:
       return "AI 服务暂时不可用"
 
     choice = response.choices[0]
+
+    # ─── 强意图但 LLM 未选工具 → 强制重试 ──────────────────────
+    # 现象：小模型(deepseek-v4-flash)有时会忽略"必须调用工具"的指令直接回纯文本，
+    # 导致带明确意图的请求(如"上海天气")错误地落入 chat fallback。
+    # 策略：tool_choice=required 强制重试一次；若仍未选工具 → 明确报错，不再静默兜底。
+    forced_retry_failed = False
+    if step == 0 and not choice.message.tool_calls and tools_schema and _has_strong_intent(text):
+      logger.info(f"AI调度: 强意图未选工具，强制重试 tool_choice=required (候选 {len(candidates)})")
+      try:
+        _llm_t0 = time.perf_counter()
+        forced_resp = await get_llm_client().chat.completions.create(
+          model=DEFAULT_MODEL,
+          messages=messages,
+          tools=tools_schema,
+          tool_choice="required",
+          temperature=0.3,
+          max_tokens=300,
+        )
+        llm_latency_ms_total += (time.perf_counter() - _llm_t0) * 1000
+        forced_choice = forced_resp.choices[0]
+        if forced_choice.message.tool_calls:
+          choice = forced_choice
+        else:
+          forced_retry_failed = True
+      except Exception as e:
+        logger.error(f"AI dispatch forced retry error: {e}")
+        forced_retry_failed = True
+
+    if forced_retry_failed:
+      err_reply = "这个请求我能猜到你的意图，但没匹配到合适的工具，换种说法再试试？"
+      logger.warning(f"AI调度: 强制重试后仍未选工具，明确报错 (text='{text[:30]}')")
+      session.add_assistant_message(err_reply)
+      record_trace(
+        text, None, {}, err_reply, step,
+        recall_sources=shadow_recall_sources,
+        candidates_ranked=shadow_candidates_ranked,
+        result_status="error",
+        route_latency_ms=shadow_latency_ms,
+        llm_latency_ms=llm_latency_ms_total,
+      )
+      return err_reply
 
     # ─── 无工具调用 ──────────────────────────────────────────
     if not choice.message.tool_calls:
