@@ -124,7 +124,7 @@ async def test_dispatch_fallback_writes_trace_fields(tmp_path):
     result = await dispatch("你好呀", mock_ctx)
 
   assert trace_file.exists()
-  last_line = trace_file.read_text().strip().split("\n")[-1]
+  last_line = trace_file.read_text(encoding="utf-8").strip().split("\n")[-1]
   data = json.loads(last_line)
 
   assert "recall_sources" in data
